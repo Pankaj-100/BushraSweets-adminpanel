@@ -563,7 +563,8 @@ Manage occasion-based serving suggestions and celebration ideas.              </
           <div className="p-4 border-t">
        <button
   onClick={() => {
-    localStorage.removeItem("isAdminLoggedIn");
+    localStorage.removeItem("token");
+      localStorage.removeItem("user");
     navigate("/login");
   }}
   className="w-full flex items-center px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100"

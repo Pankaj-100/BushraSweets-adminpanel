@@ -1,8 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { ContentProvider } from "./components/ContentContext";
-import { AuthProvider } from "./components/AuthContext";
-import { CartProvider } from "./components/CartContext";
 import { Toaster } from "./components/ui/sonner";
 import Layout from "./Layout";
 import AdminDashboard from "./AdminDashboard";
@@ -15,8 +13,8 @@ function AdminRouterWrapper() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <CartProvider>
+  
+  
         <ContentProvider>
           <Router>
             <Routes>
@@ -52,7 +50,7 @@ export default function App() {
           </Router>
           <Toaster />
         </ContentProvider>
-      </CartProvider>
-    </AuthProvider>
+  
+ 
   );
 }
