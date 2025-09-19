@@ -24,7 +24,7 @@ export function ImageUploadComponent({
   className = ""
 }: ImageUploadComponentProps) {
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadedImages, setUploadedImages] = useState<string[]>([]); // no localStorage
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]); // only in state
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadSingleImage] = useUploadSingleImageMutation();
@@ -50,7 +50,7 @@ export function ImageUploadComponent({
       if (response?.imageUrl) {
         const imageUrl = response.imageUrl;
         const newUploadedImages = [...uploadedImages, imageUrl];
-        setUploadedImages(newUploadedImages); // only in state
+        setUploadedImages(newUploadedImages); 
         onChange(imageUrl);
         toast.success('Image uploaded successfully!');
       }
@@ -67,15 +67,11 @@ export function ImageUploadComponent({
 
   const handleDeleteUploaded = (imageUrl: string) => {
     const updatedImages = uploadedImages.filter(img => img !== imageUrl);
-    setUploadedImages(updatedImages); // only in state
+    setUploadedImages(updatedImages);
 
     if (value === imageUrl) onChange('');
     toast.success('Image deleted successfully');
   };
-
-  const sampleImages = [
-    'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=300&fit=crop',
-  ];
 
   return (
     <div className={`space-y-4 ${className}`}>
@@ -124,23 +120,21 @@ export function ImageUploadComponent({
       {value && (
         <div>
           <Label className="text-sm">Current Image</Label>
-          <Card className="mt-1">
-            <CardContent className="p-3">
-              <div className="relative w-full h-32 rounded-md overflow-hidden bg-muted">
-                <ImageWithFallback src={value} alt="Preview" className="w-full h-full object-cover" />
+        
+              <div className="relative w-20 h-20 rounded-md overflow-hidden bg-muted">
+                <ImageWithFallback src={value} alt="Preview" className="object-cover" />
               </div>
-            </CardContent>
-          </Card>
+      
         </div>
       )}
 
-      {uploadedImages.length > 0 && (
+      {/* {uploadedImages.length > 0 && (
         <div>
           <Label className="text-sm">Your Uploaded Images</Label>
           <div className="grid grid-cols-3 gap-2 mt-1">
             {uploadedImages.map((imageUrl, index) => (
               <div key={index} className="relative group cursor-pointer rounded-md overflow-hidden hover:ring-2 hover:ring-primary transition-all">
-                <ImageWithFallback src={imageUrl} alt={`Uploaded ${index + 1}`} className="w-full h-16 object-cover" onClick={() => onChange(imageUrl)} />
+                <ImageWithFallback src={imageUrl} alt={`Uploaded ${index + 1}`} className=" " onClick={() => onChange(imageUrl)} />
                 {value === imageUrl && (
                   <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
                     <div className="bg-primary text-white p-1 rounded-full">
@@ -155,25 +149,7 @@ export function ImageUploadComponent({
             ))}
           </div>
         </div>
-      )}
-
-      <div>
-        <Label className="text-sm">Sample Images</Label>
-        <div className="grid grid-cols-3 gap-2 mt-1">
-          {sampleImages.map((url, index) => (
-            <div key={index} className="relative cursor-pointer rounded-md overflow-hidden hover:ring-2 hover:ring-primary transition-all" onClick={() => onChange(url)}>
-              <ImageWithFallback src={url} alt={`Sample ${index + 1}`} className="w-full h-16 object-cover" />
-              {value === url && (
-                <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
-                  <div className="bg-primary text-white p-1 rounded-full">
-                    <ImageIcon className="h-3 w-3" />
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
+      )} */}
     </div>
   );
 }

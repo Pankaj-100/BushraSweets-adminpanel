@@ -15,9 +15,9 @@ import {
   useGetServingIdeasQuery,
   useAddServingIdeaMutation,
   useEditServingIdeaMutation,
-  useDeleteServingIdeaMutation,
-  useUploadSingleImageMutation
+  useDeleteServingIdeaMutation
 } from '../../store/cmsApi';
+import { ImageUploadComponent } from './ImageUploadComponent';
 
 const occasionOptions = [
   { value: 'Religious Festival', icon: <Sparkles className="h-4 w-4" />, color: 'bg-purple-100 text-purple-600' },
@@ -33,12 +33,10 @@ export function AdminServingIdeasManager() {
   const [addServingIdea] = useAddServingIdeaMutation();
   const [editServingIdea] = useEditServingIdeaMutation();
   const [deleteServingIdea] = useDeleteServingIdeaMutation();
-  const [uploadImage] = useUploadSingleImageMutation();
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingIdea, setEditingIdea] = useState<any>(null);
   const [formData, setFormData] = useState(initialForm);
-  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (!isDialogOpen) resetForm();
@@ -86,19 +84,6 @@ export function AdminServingIdeasManager() {
       occasionType: idea.occasionType,
     });
     setIsDialogOpen(true);
-  };
-
-  const handleImageUpload = async (file: File) => {
-    setUploading(true);
-    try {
-      const res = await uploadImage(file).unwrap();
-      setFormData(prev => ({ ...prev, image: res.imageUrl }));
-      toast.success('Image uploaded successfully!');
-    } catch (err: any) {
-      toast.error(err?.data?.message || 'Image upload failed!');
-    } finally {
-      setUploading(false);
-    }
   };
 
   const resetForm = () => {
@@ -163,17 +148,13 @@ export function AdminServingIdeasManager() {
                 </Select>
               </div>
 
-              {/* Image Upload */}
+              {/* Image Upload using ImageUploadComponent */}
               <div>
-                <Label>Image</Label>
-                <div className="flex gap-2">
-                  <Input value={formData.image} onChange={e => setFormData(prev => ({ ...prev, image: e.target.value }))} placeholder="https://example.com/image.jpg" />
-                  <Button onClick={() => document.getElementById('fileInput')?.click()} disabled={uploading}>
-                    <Upload className="h-4 w-4 mr-2" /> Upload
-                  </Button>
-                  <input type="file" id="fileInput" className="hidden" accept="image/*" onChange={e => e.target.files && handleImageUpload(e.target.files[0])} />
-                </div>
-                {uploading && <p className="text-sm text-muted-foreground mt-1">Uploading...</p>}
+                <ImageUploadComponent
+                  value={formData.image}
+                  onChange={(url) => setFormData(prev => ({ ...prev, image: url }))}
+                  placeholder="Enter image URL or upload file"
+                />
               </div>
 
               <div className="flex gap-2 pt-4">
@@ -189,7 +170,7 @@ export function AdminServingIdeasManager() {
       </motion.div>
 
       {/* Serving Ideas List */}
-      <motion.div className="grid grid-cols-1 lg:grid-cols-2 gap-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.2 }}>
+      <motion.div className="grid grid-cols-1 lg:grid-cols-3 gap-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.2 }}>
         <AnimatePresence>
           {isLoading ? (
             <p>Loading...</p>

@@ -14,8 +14,8 @@ import {
   useAddTestimonialMutation,
   useEditTestimonialMutation,
   useDeleteTestimonialMutation,
-  useUploadSingleImageMutation,
 } from '../../store/cmsApi';
+import { ImageUploadComponent } from './ImageUploadComponent';
 
 export function AdminTestimonialsManager() {
   const [isEditing, setIsEditing] = useState<string | null>(null);
@@ -28,16 +28,11 @@ export function AdminTestimonialsManager() {
     image: '',
   });
 
-  const { data: testimonialsData, refetch } = useGetTestimonialsQuery(
-    { page: 1, limit: 20 },
-    { refetchOnMountOrArgChange: true }
-  );
+  const { data: testimonialsData, refetch } = useGetTestimonialsQuery({ page: 1, limit: 20 });
   const [addTestimonial] = useAddTestimonialMutation();
   const [editTestimonial] = useEditTestimonialMutation();
   const [deleteTestimonial] = useDeleteTestimonialMutation();
-  const [uploadSingleImage] = useUploadSingleImageMutation();
 
-  // FIX: Use the correct property from API response
   const testimonials = testimonialsData?.testimonials || [];
 
   const handleEdit = (testimonial: any) => {
@@ -118,16 +113,6 @@ export function AdminTestimonialsManager() {
     setEditForm({ name: '', review: '', rating: 5, occasion: '', image: '' });
   };
 
-  const handleImageUpload = async (file: File) => {
-    try {
-      const res: any = await uploadSingleImage(file).unwrap();
-      setEditForm((prev) => ({ ...prev, image: res.imageUrl }));
-      toast.success('Image uploaded successfully');
-    } catch {
-      toast.error('Image upload failed');
-    }
-  };
-
   const renderStars = (rating: number, interactive = false, onChange?: (rating: number) => void) => (
     <div className="flex items-center gap-1">
       {[1, 2, 3, 4, 5].map((star) => (
@@ -193,11 +178,13 @@ export function AdminTestimonialsManager() {
                   </div>
                 </div>
 
-                <div>
-                  <Label>Customer Image</Label>
-                  <input type="file" accept="image/*" onChange={(e) => e.target.files && handleImageUpload(e.target.files[0])} />
-                  {editForm.image && <img src={editForm.image} className="mt-2 w-24 h-24 object-cover rounded" />}
-                </div>
+                {/* Image Upload */}
+                <ImageUploadComponent
+                  value={editForm.image}
+                  onChange={(url) => setEditForm((prev) => ({ ...prev, image: url }))}
+                  label="Customer Image"
+                  placeholder="Enter image URL or upload"
+                />
 
                 <div>
                   <Label>Rating</Label>
@@ -230,15 +217,14 @@ export function AdminTestimonialsManager() {
       </AnimatePresence>
 
       {/* Testimonials List */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <AnimatePresence>
           {testimonials.map((testimonial: any) => (
             <motion.div key={testimonial.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }}>
-              <Card className="h-full">
+              <Card className="h-full ">
                 <CardContent className="p-6">
                   {isEditing === testimonial.id ? (
                     <div className="space-y-4">
-                      {/* Edit form similar to add */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <Label>Customer Name *</Label>
@@ -249,11 +235,14 @@ export function AdminTestimonialsManager() {
                           <Input value={editForm.occasion} onChange={(e) => setEditForm((prev) => ({ ...prev, occasion: e.target.value }))} />
                         </div>
                       </div>
-                      <div>
-                        <Label>Customer Image</Label>
-                        <input type="file" accept="image/*" onChange={(e) => e.target.files && handleImageUpload(e.target.files[0])} />
-                        {editForm.image && <img src={editForm.image} className="mt-2 w-24 h-24 object-cover rounded" />}
-                      </div>
+
+                      <ImageUploadComponent
+                        value={editForm.image}
+                        onChange={(url) => setEditForm((prev) => ({ ...prev, image: url }))}
+                        label="Customer Image"
+                        placeholder="Enter image URL or upload"
+                      />
+
                       <div>
                         <Label>Rating</Label>
                         {renderStars(editForm.rating, true, (rating) => setEditForm((prev) => ({ ...prev, rating })))}
