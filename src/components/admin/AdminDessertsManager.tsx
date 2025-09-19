@@ -265,8 +265,8 @@ export function AdminDessertsManager() {
           {desserts.map((dessert, index) => (
             <motion.div key={dessert.id} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ duration: 0.3, delay: index * 0.1 }}>
               <Card className="overflow-hidden">
-                <div className="relative">
-                  <ImageWithFallback src={dessert.dessertImages[0]} alt={dessert.dessertName} className="w-full h-48 object-cover" />
+                <div className="relative mt-2">
+                  <ImageWithFallback src={dessert.dessertImages[0]} alt={dessert.dessertName} className="w-80 h-48 object-fit mx-auto " />
                   <div className="absolute top-2 right-2 flex gap-2">
                     {dessert.featured && <Badge className="bg-primary">Featured</Badge>}
                     {dessert.isPopular && <Badge className="bg-orange-500">Popular</Badge>}
