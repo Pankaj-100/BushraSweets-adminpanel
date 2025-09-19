@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
@@ -7,7 +7,7 @@ import { Textarea } from '../ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Badge } from '../ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '../ui/dialog';
-import { Plus, Edit, Trash2, Save, Eye, Calendar, Users, Heart, Sparkles, Upload } from 'lucide-react';
+import { Plus, Edit, Trash2, Save, Calendar, Users, Heart, Sparkles } from 'lucide-react';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
@@ -27,6 +27,13 @@ const occasionOptions = [
 ];
 
 const initialForm = { title: '', description: '', image: '', occasionType: 'Family Event' };
+
+// Loader component
+const Loader = () => (
+  <div className="flex justify-center items-center py-20">
+    <div className="h-10 w-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+  </div>
+);
 
 export function AdminServingIdeasManager() {
   const { data, isLoading, refetch } = useGetServingIdeasQuery({ page: 1, limit: 50 });
@@ -173,7 +180,7 @@ export function AdminServingIdeasManager() {
       <motion.div className="grid grid-cols-1 lg:grid-cols-3 gap-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.2 }}>
         <AnimatePresence>
           {isLoading ? (
-            <p>Loading...</p>
+            <Loader />
           ) : data?.servingIdeas.length === 0 ? (
             <Card className="p-12 text-center">
               <Sparkles className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
