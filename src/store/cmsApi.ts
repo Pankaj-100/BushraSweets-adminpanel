@@ -10,7 +10,7 @@
         return headers;
         },
     }),
-    tagTypes: ["Testimonials", "Upload", "ServingIdeas", "Desserts"],
+    tagTypes: ["Testimonials", "Upload", "ServingIdeas", "Desserts","Hero","About","Business", "Socials"],
     endpoints: (builder) => ({
         // =================== TESTIMONIALS CRUD ===================
         getTestimonials: builder.query<any, { page?: number; limit?: number }>({
@@ -100,8 +100,67 @@
         query: (id) => ({ url: `/desserts/delete-dessert/${id}`, method: "DELETE" }),
         invalidatesTags: ["Desserts"],
         }),
+
+         // =================== HERO ===================
+    getHero: builder.query<any, void>({
+      query: () => "/hero/hero",
+      providesTags: ["Hero"],
     }),
-    });
+    editHero: builder.mutation<any, { title: string; subtitle: string; backgroundImage: string; ctaText: string }>({
+      query: (body) => ({ url: "/hero/edit-hero", method: "POST", body }),
+      invalidatesTags: ["Hero"],
+    }),
+
+    // =================== ABOUT ===================
+getAbout: builder.query<any, void>({
+  query: () => "/about/getAbout",
+  providesTags: ["About"],
+}),
+editAbout: builder.mutation<any, {
+  chefName: string;
+  chefStory: string;
+  professionalTitle: string;
+  chefPhoto: string;
+  certification: string;
+  experience: string;
+}>({
+  query: (body) => ({
+    url: "/about/edit-about",
+    method: "POST",
+    body,
+  }),
+  invalidatesTags: ["About"],
+}),
+
+   // =================== BUSINESS INFO ===================
+    getBusinessInfo: builder.query<any, void>({
+      query: () => "/siteSetting/getBusinessInfo",
+      providesTags: ["Business"],
+    }),
+    editBusinessInfo: builder.mutation<any, { businessName: string; businessAddress: string; email: string; deliveryInformation: string }>({
+      query: (body) => ({ url: "/siteSetting/edit-BusinessInfo", method: "POST", body }),
+      invalidatesTags: ["Business"],
+    }),
+
+    // =================== SOCIALS ===================
+    getSocials: builder.query<any, void>({
+      query: () => "/siteSetting/getSocial",
+      providesTags: ["Socials"],
+    }),
+    editSocials: builder.mutation<any, {
+      facebook?: string;
+      instagram?: string;
+      whatsapp?: string;
+      twitter?: string;
+      linkedIn?: string;
+      youTube?: string;
+    }>({
+      query: (body) => ({ url: "/siteSetting/edit-socials", method: "POST", body }),
+      invalidatesTags: ["Socials"],
+    }),
+  }),
+});
+    
 
     export const {
     useGetTestimonialsQuery,
@@ -118,4 +177,12 @@
     useAddDessertMutation,
     useEditDessertMutation,
     useDeleteDessertMutation,
+      useGetHeroQuery,
+  useEditHeroMutation,
+   useGetAboutQuery,
+  useEditAboutMutation,
+    useGetBusinessInfoQuery,
+  useEditBusinessInfoMutation,
+  useGetSocialsQuery,
+  useEditSocialsMutation,
     } = cmsApi;
