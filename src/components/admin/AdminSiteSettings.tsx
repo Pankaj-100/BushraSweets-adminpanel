@@ -15,7 +15,7 @@ import {
   useGetSocialsQuery,
   useEditSocialsMutation
 } from '../../store/cmsApi';
-
+import { Loader2 } from 'lucide-react';
 export function AdminSiteSettings() {
   const { data: businessData, isLoading: isBusinessLoading } = useGetBusinessInfoQuery();
   const [editBusinessInfo, { isLoading: isSavingBusiness }] = useEditBusinessInfoMutation();
@@ -116,7 +116,9 @@ export function AdminSiteSettings() {
     }
   };
 
-  if (isBusinessLoading || isSocialsLoading) return <p>Loading site settings...</p>;
+  if (isBusinessLoading || isSocialsLoading) return   <div className="flex justify-center items-center py-12">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    </div>;
 
   const socialPlatforms = [
     { id: 'facebook', name: 'Facebook', icon: <Facebook className="h-4 w-4" />, placeholder: 'https://facebook.com/bushrassweets' },

@@ -10,7 +10,7 @@ import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { toast } from 'sonner';
 import { useGetAboutQuery, useEditAboutMutation, useUploadSingleImageMutation } from '../../store/cmsApi';
 import { ImageUploadComponent } from './ImageUploadComponent';
-
+import { Loader2 } from 'lucide-react';
 export function AdminAboutManager() {
   const { data, isLoading, isError } = useGetAboutQuery();
   const [editAbout, { isLoading: isSaving }] = useEditAboutMutation();
@@ -78,7 +78,13 @@ export function AdminAboutManager() {
     }
   };
 
-  if (isLoading) return <p>Loading About section...</p>;
+ if (isLoading) {
+  return (
+    <div className="flex justify-center items-center py-12">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    </div>
+  );
+}
   if (isError) return <p>Failed to load About section</p>;
 
   const sampleImages = [

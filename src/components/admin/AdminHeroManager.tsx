@@ -10,7 +10,7 @@ import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { toast } from 'sonner';
 import { useGetHeroQuery, useEditHeroMutation } from '../../store/cmsApi';
 import { ImageUploadComponent } from './ImageUploadComponent';
-
+import { Loader2 } from 'lucide-react';
 export function AdminHeroManager() {
   const { data, isLoading, isError } = useGetHeroQuery();
   const [editHero, { isLoading: isSaving }] = useEditHeroMutation();
@@ -64,7 +64,9 @@ export function AdminHeroManager() {
     'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=1200&h=800&fit=crop',
   ];
 
-  if (isLoading) return <p>Loading hero data...</p>;
+  if (isLoading) return  <div className="flex justify-center items-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>;
   if (isError) return <p>Failed to load hero data</p>;
 
   return (

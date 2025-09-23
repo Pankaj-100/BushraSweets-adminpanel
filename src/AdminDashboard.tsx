@@ -497,7 +497,7 @@ Manage occasion-based serving suggestions and celebration ideas.              </
     { id: 'about', label: 'About Section', icon: Users },
     { id: 'serving-ideas', label: 'Serving Ideas', icon: FileText },
     { id: 'payments', label: 'Payments', icon: CreditCard },
-    { id: 'settings', label: 'Settings', icon: Settings },
+    { id: 'settings', label: ' Site Settings', icon: Settings },
   ];
 
   if (isLoading || !content) {
