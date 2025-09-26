@@ -269,7 +269,7 @@ export function AdminDessertsManager() {
                 <div className="relative mt-2">
                   <ImageWithFallback src={dessert.dessertImages[0]} alt={dessert.dessertName} className="w-80 h-48 object-fit mx-auto " />
                   <div className="absolute top-2 right-2 flex gap-2">
-                    {dessert.featured && <Badge className="bg-primary">Featured</Badge>}
+                    {dessert.isFeatured && <Badge className="bg-primary">Featured</Badge>}
                     {dessert.isPopular && <Badge className="bg-orange-500">Popular</Badge>}
                     <Badge variant={dessert.isActive ? "default" : "secondary"}>{dessert.isActive ? 'Active' : 'Inactive'}</Badge>
                   </div>
