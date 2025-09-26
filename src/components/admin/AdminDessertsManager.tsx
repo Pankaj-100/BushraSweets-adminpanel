@@ -29,7 +29,7 @@ interface AdminDessert {
   serves?: string;
   category?: 'Traditional' | 'Seasonal' | 'Frozen' | 'Custom';
   isPopular?: boolean;
-  featured?: boolean;
+  isFeatured?: boolean;
   allergens?: string[];
   ingredients?: string[];
   isActive?: boolean;
@@ -46,7 +46,7 @@ const initialDessertData: Omit<AdminDessert, 'id'> = {
   serves: '',
   category: 'Traditional',
   isPopular: false,
-  featured: false,
+  isFeatured: true,
   allergens: [],
   ingredients: [],
   isActive: true,
@@ -112,6 +112,7 @@ export function AdminDessertsManager() {
     setEditingDessert(dessert);
     setFormData({
       ...dessert,
+      
       dessertImages: dessert.dessertImages.length ? dessert.dessertImages : ['']
     });
     setIsDialogOpen(true);
@@ -237,7 +238,7 @@ export function AdminDessertsManager() {
               {/* Settings */}
               <div className="grid grid-cols-3 gap-4">
                 <div className="flex items-center space-x-2">
-                  <input type="checkbox" checked={formData.featured} onChange={e => setFormData(prev => ({ ...prev, featured: e.target.checked }))} />
+                  <input type="checkbox" checked={formData.isFeatured} onChange={e => setFormData(prev => ({ ...prev, isFeatured: e.target.checked }))} />
                   <Label>Featured</Label>
                 </div>
                 <div className="flex items-center space-x-2">
