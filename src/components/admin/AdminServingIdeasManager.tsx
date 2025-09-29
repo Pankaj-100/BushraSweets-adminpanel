@@ -141,7 +141,7 @@ export function AdminServingIdeasManager() {
               </div>
               <div>
                 <Label htmlFor="occasion">Occasion Type</Label>
-                <Select value={formData.occasionType} onValueChange={value => setFormData(prev => ({ ...prev, occasionType: value }))}>
+<Select value={formData.occasionType} onValueChange={(value: string) => setFormData(prev => ({ ...prev, occasionType: value }))}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>

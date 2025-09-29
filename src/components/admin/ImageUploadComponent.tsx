@@ -14,6 +14,7 @@ interface ImageUploadComponentProps {
   label?: string;
   placeholder?: string;
   className?: string;
+  onFileUpload?: (file: File) => Promise<void>;
 }
 
 export function ImageUploadComponent({
