@@ -41,6 +41,7 @@ export default function App() {
                         <Route path="/orders" element={<AdminRouterWrapper />} />
                         <Route path="/settings" element={<AdminRouterWrapper />} />
                         <Route path="/payments" element={<AdminRouterWrapper />} />
+                        <Route path="/inquiries" element={<AdminRouterWrapper />} />
                       </Routes>
                     </Layout>
                   </ProtectedRoute>

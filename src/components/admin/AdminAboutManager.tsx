@@ -95,10 +95,10 @@ export function AdminAboutManager() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+      {/* <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
         <h2 className="text-2xl font-bold mb-2">About Section Management</h2>
         <p className="text-muted-foreground">Manage the chef's profile, story, and credentials</p>
-      </motion.div>
+      </motion.div> */}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Edit Form */}

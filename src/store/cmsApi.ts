@@ -10,7 +10,8 @@ export const cmsApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ["Testimonials", "Upload", "ServingIdeas", "Desserts","Hero","About","Business", "Socials"],
+  tagTypes: ["Testimonials", "Upload", "ServingIdeas", "Desserts","Hero","About","Business", "Socials", "EventInquiries",
+    "GeneralInquiries"],
   endpoints: (builder) => ({
     // =================== TESTIMONIALS CRUD ===================
     getTestimonials: builder.query<any, { page?: number; limit?: number }>({
@@ -110,10 +111,25 @@ export const cmsApi = createApi({
       query: () => "/hero/hero",
       providesTags: ["Hero"],
     }),
-    editHero: builder.mutation<any, { title: string; subtitle: string; backgroundImage: string; ctaText: string }>({
-      query: (body) => ({ url: "/hero/edit-hero", method: "POST", body }),
-      invalidatesTags: ["Hero"],
-    }),
+editHero: builder.mutation<
+  any,
+  {
+    title: string;
+    subtitle: string;
+    backgroundImage: string;
+    ctaText: string;
+    description: string;
+    todaysSpecial: string[]; // array of dessert IDs
+  }
+>({
+  query: (body) => ({
+    url: "/hero/edit-hero",
+    method: "POST",
+    body
+  }),
+  invalidatesTags: ["Hero"],
+}),
+
 
     // =================== ABOUT ===================
     getAbout: builder.query<any, void>({
@@ -137,8 +153,24 @@ export const cmsApi = createApi({
       query: () => "/siteSetting/getBusinessInfo",
       providesTags: ["Business"],
     }),
-    editBusinessInfo: builder.mutation<any, { businessName: string; businessAddress: string; email: string; deliveryInformation: string }>({
-      query: (body) => ({ url: "/siteSetting/edit-BusinessInfo", method: "POST", body }),
+   editBusinessInfo: builder.mutation<
+      any,
+      {
+        businessName: string;
+        businessAddress: string;
+        number: string;
+        email: string;
+        deliveryInformation: string;
+        businessHoursMondayFriday?: string;
+        businessHoursSaturday?: string;
+        businessHoursSunday?: string;
+      }
+    >({
+      query: (body) => ({
+        url: "/siteSetting/edit-BusinessInfo",
+        method: "POST",
+        body,
+      }),
       invalidatesTags: ["Business"],
     }),
 
@@ -158,7 +190,28 @@ export const cmsApi = createApi({
       query: (body) => ({ url: "/siteSetting/edit-socials", method: "POST", body }),
       invalidatesTags: ["Socials"],
     }),
+
+    // =================== INQUIRIES ===================
+getEventInquiries: builder.query<
+  any,
+  { page?: number; limit?: number }
+>({
+  query: ({ page = 1, limit = 4 }) =>
+    `/inquiries/getInquiries?page=${page}&limit=${limit}`,
+  providesTags: ["EventInquiries"],
+}),
+
+getGeneralInquiries: builder.query<
+  any,
+  { page?: number; limit?: number }
+>({
+  query: ({ page = 1, limit = 4 }) =>
+    `/inquiries/getQueries?page=${page}&limit=${limit}`,
+  providesTags: ["GeneralInquiries"],
+}),
+
   }),
+  
 });
 
 export const {
@@ -184,4 +237,6 @@ export const {
   useEditBusinessInfoMutation,
   useGetSocialsQuery,
   useEditSocialsMutation,
+    useGetEventInquiriesQuery,
+  useGetGeneralInquiriesQuery,
 } = cmsApi;

@@ -152,10 +152,10 @@ export function AdminDessertsManager() {
     <div className="space-y-6">
       {/* Header */}
       <motion.div className="flex items-center justify-between" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-        <div>
+        {/* <div>
           <h2 className="text-2xl font-bold mb-2">Desserts Management</h2>
           <p className="text-muted-foreground">Manage your dessert catalog and inventory</p>
-        </div>
+        </div> */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={() => resetForm()}>
@@ -267,7 +267,7 @@ export function AdminDessertsManager() {
             <motion.div key={dessert.id} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ duration: 0.3, delay: index * 0.1 }}>
               <Card className="overflow-hidden">
                 <div className="relative mt-2">
-                  <ImageWithFallback src={dessert.dessertImages[0]} alt={dessert.dessertName} className="w-80 h-48 object-fit mx-auto " />
+                  <ImageWithFallback src={dessert.dessertImages[0]} alt={dessert.dessertName} className="w-80 h-48 object-fit mx-auto  " />
                   <div className="absolute top-2 right-2 flex gap-2">
                     {dessert.isFeatured && <Badge className="bg-primary">Featured</Badge>}
                     {dessert.isPopular && <Badge className="bg-orange-500">Popular</Badge>}

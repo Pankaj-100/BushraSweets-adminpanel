@@ -23,8 +23,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './com
 import { Badge } from './components/ui/badge';
 import { Input } from './components/ui/input';
 import { useContent } from './components/ContentContext';
+import { AdminInquiries } from './components/admin/AdminInquiry';
 
-type AdminSectionType = 'dashboard' | 'desserts' | 'hero' | 'about' | 'serving-ideas' | 'testimonials' | 'orders' | 'settings' | 'payments';
+type AdminSectionType = 'dashboard' | 'desserts' | 'hero' | 'about' | 'serving-ideas' | 'testimonials' | 'orders' | 'settings' | 'payments' | 'inquiries';
 
 interface AdminDashboardProps {
   onLogout?: () => void;
@@ -46,6 +47,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     if (path.includes('/admin/orders')) return 'orders';
     if (path.includes('/admin/settings')) return 'settings';
     if (path.includes('/admin/payments')) return 'payments';
+    if (path.includes('/admin/inquiries')) return 'inquiries';
     return 'dashboard';
   };
 
@@ -121,7 +123,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       'orders': 'Orders Management',
       'settings': 'Site Settings',
       'payments': 'Payment Settings',
-      'dashboard': 'Dashboard Overview'
+      'dashboard': 'Dashboard Overview',
+      'inquiries': 'Customer Inquiries'
     };
     return titles[currentSection] || 'Admin Dashboard';
   };
@@ -136,7 +139,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       'orders': 'View and manage customer orders, update statuses, and track deliveries',
       'settings': 'Configure business settings, contact info, and social media links',
       'payments': 'Configure payment gateways for online transactions',
-      'dashboard': ''
+      'dashboard': '',
+      'inquiries': 'Manage customer inquiries ',
     };
     return descriptions[currentSection] || ' ';
   };
@@ -159,6 +163,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
         return <AdminSiteSettings />;
       case 'payments':
         return <AdminPaymentSettings />;
+      case 'inquiries':
+        return <AdminInquiries/>
       case 'dashboard':
       default:
         return (
@@ -498,6 +504,7 @@ Manage occasion-based serving suggestions and celebration ideas.              </
     { id: 'serving-ideas', label: 'Serving Ideas', icon: FileText },
     { id: 'payments', label: 'Payments', icon: CreditCard },
     { id: 'settings', label: ' Site Settings', icon: Settings },
+    { id: 'inquiries', label: 'Inquiries', icon: Bell, },
   ];
 
   if (isLoading || !content) {
@@ -578,8 +585,8 @@ Manage occasion-based serving suggestions and celebration ideas.              </
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 lg:ml-0">
-        <div className="sticky top-0 z-40 lg:relative bg-white shadow-sm lg:shadow-none border-b lg:border-none">
+      <div className="flex-1 lg:ml-0  ">
+        <div className="sticky top-0 z-999 lg:relative bg-white shadow-sm lg:shadow-none border-b lg:border-none">
           <div className="flex items-center justify-between p-4">
             <div className="flex items-center">
               <button 
@@ -588,7 +595,7 @@ Manage occasion-based serving suggestions and celebration ideas.              </
               >
                 <Menu className="h-5 w-5" />
               </button>
-              <div>
+              <div className="space-y-1 z-999" >
                 <h1 className="text-xl font-bold">{getSectionTitle()}</h1>
                 <p className="text-sm text-gray-500">{getSectionDescription()}</p>
               </div>

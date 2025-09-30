@@ -8,39 +8,46 @@ import { motion } from 'motion/react';
 import { Save, Eye, FileText, MousePointer } from 'lucide-react';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { toast } from 'sonner';
-import { useGetHeroQuery, useEditHeroMutation } from '../../store/cmsApi';
+import { useGetHeroQuery, useEditHeroMutation, useGetDessertsQuery } from '../../store/cmsApi';
 import { ImageUploadComponent } from './ImageUploadComponent';
 import { Loader2 } from 'lucide-react';
+
 export function AdminHeroManager() {
   const { data, isLoading, isError } = useGetHeroQuery();
   const [editHero, { isLoading: isSaving }] = useEditHeroMutation();
+  const { data: dessertsData } = useGetDessertsQuery({ page: 1, limit: 50 });
 
   const [formData, setFormData] = useState({
     title: '',
     subtitle: '',
     ctaText: '',
-    backgroundImage: ''
+    backgroundImage: '',
+    description: '',
+    todaysSpecial: ''
   });
 
   useEffect(() => {
     if (data?.hero) {
       setFormData({
-        title: data.hero.title,
-        subtitle: data.hero.subtitle,
-        ctaText: data.hero.ctaText,
-        backgroundImage: data.hero.backgroundImage
+        title: data.hero.title || '',
+        subtitle: data.hero.subtitle || '',
+        ctaText: data.hero.ctaText || '',
+        backgroundImage: data.hero.backgroundImage || '',
+        description: data.hero.description || '',
+        todaysSpecial: data.hero.todaysSpecial?.[0] || ''
       });
     }
   }, [data]);
-
+console.log(formData);
   const handleSave = async () => {
-    if (!formData.title || !formData.subtitle) {
+    if (!formData.title || !formData.subtitle || !formData.description) {
       toast.error('Please fill in all required fields');
       return;
     }
 
     try {
-      await editHero(formData).unwrap();
+      // API expects todaysSpecial as an array
+      await editHero({ ...formData, todaysSpecial: formData.todaysSpecial ? [formData.todaysSpecial] : [] }).unwrap();
       toast.success('Hero section updated successfully!');
     } catch (err: any) {
       toast.error(err?.data?.message || 'Failed to update hero');
@@ -50,10 +57,12 @@ export function AdminHeroManager() {
   const handleReset = () => {
     if (data?.hero) {
       setFormData({
-        title: data.hero.title,
-        subtitle: data.hero.subtitle,
-        ctaText: data.hero.ctaText,
-        backgroundImage: data.hero.backgroundImage
+        title: data.hero.title || '',
+        subtitle: data.hero.subtitle || '',
+        ctaText: data.hero.ctaText || '',
+        backgroundImage: data.hero.backgroundImage || '',
+        description: data.hero.description || '',
+        todaysSpecial: data.hero.todaysSpecial?.[0] || ''
       });
       toast.info('Changes reset to saved version');
     }
@@ -64,20 +73,17 @@ export function AdminHeroManager() {
     'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=1200&h=800&fit=crop',
   ];
 
-  if (isLoading) return  <div className="flex justify-center items-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>;
+  if (isLoading) return (
+    <div className="flex justify-center items-center py-12">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    </div>
+  );
   if (isError) return <p>Failed to load hero data</p>;
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-        <h2 className="text-2xl font-bold mb-2">Hero Section Management</h2>
-        <p className="text-muted-foreground">Customize your homepage hero section content and appearance</p>
-      </motion.div>
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
         {/* Edit Form */}
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.1 }}>
           <Card>
@@ -88,6 +94,7 @@ export function AdminHeroManager() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
+
               <div>
                 <Label htmlFor="title">Main Title *</Label>
                 <Input
@@ -111,6 +118,32 @@ export function AdminHeroManager() {
               </div>
 
               <div>
+                <Label htmlFor="description">Description *</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="Describe your hero section..."
+                  rows={3}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="todaysSpecial">Today's Special</Label>
+                <select
+                  id="todaysSpecial"
+                  value={formData.todaysSpecial}
+                  onChange={(e) => setFormData(prev => ({ ...prev, todaysSpecial: e.target.value }))}
+                  className="w-full border rounded px-2 py-1"
+                >
+                  <option value="">-- Select Dessert --</option>
+                  {dessertsData?.desserts?.map((dessert: any) => (
+                    <option key={dessert.id} value={dessert.id}>{dessert.dessertName}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
                 <Label htmlFor="ctaText">Call-to-Action Button Text</Label>
                 <Input
                   id="ctaText"
@@ -120,7 +153,6 @@ export function AdminHeroManager() {
                 />
               </div>
 
-              {/* Image Upload using ImageUploadComponent */}
               <div>
                 <Label>Background Image</Label>
                 <ImageUploadComponent
@@ -130,7 +162,6 @@ export function AdminHeroManager() {
                 />
               </div>
 
-              {/* Sample Background Images */}
               <div>
                 <Label>Quick Select Backgrounds</Label>
                 <div className="grid grid-cols-2 gap-2 mt-2">
@@ -162,6 +193,7 @@ export function AdminHeroManager() {
                   Reset
                 </Button>
               </div>
+
             </CardContent>
           </Card>
         </motion.div>
@@ -177,19 +209,39 @@ export function AdminHeroManager() {
             </CardHeader>
             <CardContent>
               <div className="relative rounded-lg overflow-hidden bg-gray-100 min-h-[400px]">
-                <ImageWithFallback src={formData.backgroundImage} alt="Hero background preview" className="w-full h-full object-cover absolute inset-0" />
+                <ImageWithFallback
+                  src={formData.backgroundImage}
+                  alt="Hero background preview"
+                  className="w-full h-full object-cover absolute inset-0"
+                />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/60"></div>
                 <div className="relative z-10 p-8 h-full flex flex-col justify-center text-center text-white">
-                  <h1 className="text-2xl lg:text-3xl font-bold mb-4 leading-tight">{formData.title || 'Your Title Here'}</h1>
-                  <p className="text-sm lg:text-base mb-6 opacity-90 leading-relaxed">{formData.subtitle || 'Your subtitle will appear here...'}</p>
+                  <h1 className="text-2xl lg:text-3xl font-bold mb-4 leading-tight">
+                    {formData.title || 'Your Title Here'}
+                  </h1>
+                  <p className="text-sm lg:text-base mb-2 opacity-90 leading-relaxed">
+                    {formData.subtitle || 'Your subtitle will appear here...'}
+                  </p>
+                  <p className="text-sm lg:text-base mb-6 opacity-90 leading-relaxed">
+                    {formData.description || 'Description goes here...'}
+                  </p>
                   <div className="flex flex-col gap-2">
-                    <Button className="mx-auto px-6 py-2 text-sm"><MousePointer className="h-3 w-3 mr-2" />{formData.ctaText || 'Call to Action'}</Button>
+                    <Button className="mx-auto px-6 py-2 text-sm">
+                      <MousePointer className="h-3 w-3 mr-2" />
+                      {formData.ctaText || 'Call to Action'}
+                    </Button>
+                    {formData.todaysSpecial && (
+                      <p className="text-sm mt-2">
+                        Today's Special: {formData.todaysSpecial || 'N/A'}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
             </CardContent>
           </Card>
         </motion.div>
+
       </div>
     </div>
   );

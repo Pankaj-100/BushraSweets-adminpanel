@@ -7,7 +7,7 @@ import { Textarea } from '../ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Badge } from '../ui/badge';
 import { motion } from 'motion/react';
-import { Save, Phone, Mail, MapPin, Truck, Facebook, Instagram, MessageCircle, Twitter, Linkedin, Youtube, ExternalLink, Copy, CheckCircle } from 'lucide-react';
+import { Save, Phone, Mail, MapPin, Facebook, Instagram, MessageCircle, Twitter, Linkedin, Youtube, ExternalLink, Copy, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { 
   useGetBusinessInfoQuery,
@@ -16,19 +16,22 @@ import {
   useEditSocialsMutation
 } from '../../store/cmsApi';
 import { Loader2 } from 'lucide-react';
+
 export function AdminSiteSettings() {
   const { data: businessData, isLoading: isBusinessLoading } = useGetBusinessInfoQuery();
   const [editBusinessInfo, { isLoading: isSavingBusiness }] = useEditBusinessInfoMutation();
-
   const { data: socialsData, isLoading: isSocialsLoading } = useGetSocialsQuery();
   const [editSocials, { isLoading: isSavingSocials }] = useEditSocialsMutation();
 
   const [businessSettings, setBusinessSettings] = useState({
     businessName: '',
-    phone: '',
+    number: '',
     email: '',
     address: '',
     deliveryInfo: '',
+    businessHoursMondayFriday: '',
+    businessHoursSaturday: '',
+    businessHoursSunday: '',
     socialMedia: {
       facebook: '',
       instagram: '',
@@ -38,6 +41,7 @@ export function AdminSiteSettings() {
       youTube: ''
     }
   });
+
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   // Initialize state when API data arrives
@@ -46,26 +50,30 @@ export function AdminSiteSettings() {
       setBusinessSettings(prev => ({
         ...prev,
         businessName: businessData.businessInfo.businessName || '',
-        phone: businessData.businessInfo.phone || '',
+        number: businessData.businessInfo.number || '',
         email: businessData.businessInfo.email || '',
         address: businessData.businessInfo.businessAddress || '',
-        deliveryInfo: businessData.businessInfo.deliveryInformation || ''
+        deliveryInfo: businessData.businessInfo.deliveryInformation || '',
+        businessHoursMondayFriday: businessData.businessInfo.businessHoursMondayFriday || '',
+        businessHoursSaturday: businessData.businessInfo.businessHoursSaturday || '',
+        businessHoursSunday: businessData.businessInfo.businessHoursSunday || ''
       }));
     }
-   if (socialsData?.social) { // ✅ use 'social' not 'socials'
-    setBusinessSettings(prev => ({
-      ...prev,
-      socialMedia: {
-        facebook: socialsData.social.facebook || '',
-        instagram: socialsData.social.instagram || '',
-        whatsapp: socialsData.social.whatsapp || '',
-        twitter: socialsData.social.twitter || '',
-        linkedIn: socialsData.social.linkedIn || '',
-        youTube: socialsData.social.youTube || ''
-      }
-    }));
-  }
-}, [businessData, socialsData]);
+    if (socialsData?.social) {
+      setBusinessSettings(prev => ({
+        ...prev,
+        socialMedia: {
+          facebook: socialsData.social.facebook || '',
+          instagram: socialsData.social.instagram || '',
+          whatsapp: socialsData.social.whatsapp || '',
+          twitter: socialsData.social.twitter || '',
+          linkedIn: socialsData.social.linkedIn || '',
+          youTube: socialsData.social.youTube || ''
+        }
+      }));
+    }
+  }, [businessData, socialsData]);
+
   const handleBusinessChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setBusinessSettings(prev => ({ ...prev, [name]: value }));
@@ -87,7 +95,11 @@ export function AdminSiteSettings() {
         businessName: businessSettings.businessName,
         businessAddress: businessSettings.address,
         email: businessSettings.email,
-        deliveryInformation: businessSettings.deliveryInfo
+        number: businessSettings.number,
+        deliveryInformation: businessSettings.deliveryInfo,
+        businessHoursMondayFriday: businessSettings.businessHoursMondayFriday,
+        businessHoursSaturday: businessSettings.businessHoursSaturday,
+        businessHoursSunday: businessSettings.businessHoursSunday
       }).unwrap();
 
       await editSocials({
@@ -116,9 +128,11 @@ export function AdminSiteSettings() {
     }
   };
 
-  if (isBusinessLoading || isSocialsLoading) return   <div className="flex justify-center items-center py-12">
+  if (isBusinessLoading || isSocialsLoading) return (
+    <div className="flex justify-center items-center py-12">
       <Loader2 className="h-8 w-8 animate-spin text-primary" />
-    </div>;
+    </div>
+  );
 
   const socialPlatforms = [
     { id: 'facebook', name: 'Facebook', icon: <Facebook className="h-4 w-4" />, placeholder: 'https://facebook.com/bushrassweets' },
@@ -131,7 +145,6 @@ export function AdminSiteSettings() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">Site Settings</h2>
@@ -150,7 +163,6 @@ export function AdminSiteSettings() {
         </TabsList>
 
         <TabsContent value="business" className="space-y-6">
-          {/* Business Information */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <Card>
               <CardHeader>
@@ -163,10 +175,10 @@ export function AdminSiteSettings() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="phone">Phone Number</Label>
+                    <Label htmlFor="number">Phone Number</Label>
                     <div className="relative">
                       <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input id="phone" name="phone" value={businessSettings.phone} onChange={handleBusinessChange} placeholder="(555) 123-4567" className="pl-10" />
+                      <Input id="number" name="number" value={businessSettings.number} onChange={handleBusinessChange} placeholder="(555) 123-4567" className="pl-10" />
                     </div>
                   </div>
                   <div>
@@ -185,13 +197,27 @@ export function AdminSiteSettings() {
                   <Label htmlFor="deliveryInfo">Delivery Information</Label>
                   <Textarea id="deliveryInfo" name="deliveryInfo" value={businessSettings.deliveryInfo} onChange={handleBusinessChange} placeholder="Free delivery on orders over $50" className="pl-3" rows={2} />
                 </div>
+                {/* New Business Hours Fields */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="businessHoursMondayFriday">Business Hours (Mon-Fri)</Label>
+                    <Input id="businessHoursMondayFriday" name="businessHoursMondayFriday" value={businessSettings.businessHoursMondayFriday} onChange={handleBusinessChange} placeholder="09:00 AM - 06:00 PM" />
+                  </div>
+                  <div>
+                    <Label htmlFor="businessHoursSaturday">Business Hours (Sat)</Label>
+                    <Input id="businessHoursSaturday" name="businessHoursSaturday" value={businessSettings.businessHoursSaturday} onChange={handleBusinessChange} placeholder="10:00 AM - 04:00 PM" />
+                  </div>
+                  <div>
+                    <Label htmlFor="businessHoursSunday">Business Hours (Sun)</Label>
+                    <Input id="businessHoursSunday" name="businessHoursSunday" value={businessSettings.businessHoursSunday} onChange={handleBusinessChange} placeholder="Closed" />
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </motion.div>
         </TabsContent>
 
         <TabsContent value="social" className="space-y-6">
-          {/* Social Media */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <Card>
               <CardHeader>
