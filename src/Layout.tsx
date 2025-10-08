@@ -7,7 +7,7 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
   return (
-    <div className="w-[800px]">
+    <div className="w-[800px] ">
       {/* 
         px-* → responsive horizontal padding
         mx-auto → centers the container

@@ -586,16 +586,16 @@ Manage occasion-based serving suggestions and celebration ideas.              </
 
       {/* Main Content */}
       <div className="flex-1 lg:ml-0  ">
-        <div className="sticky top-0 z-999 lg:relative bg-white shadow-sm lg:shadow-none border-b lg:border-none">
-          <div className="flex items-center justify-between p-4">
+        <div className="sticky top-0 z-20 lg:relative bg-white shadow-sm lg:shadow-none border-b lg:border-none">
+          <div className="flex items-center justify-between p-4 ">
             <div className="flex items-center">
               <button 
                 onClick={() => setMobileMenuOpen(true)}
                 className="lg:hidden p-2 rounded-lg hover:bg-gray-100 mr-2"
               >
-                <Menu className="h-5 w-5" />
+                <Menu className="h-5 w-5 " />
               </button>
-              <div className="space-y-1 z-999" >
+              <div className="space-y-1 !z-999 " >
                 <h1 className="text-xl font-bold">{getSectionTitle()}</h1>
                 <p className="text-sm text-gray-500">{getSectionDescription()}</p>
               </div>

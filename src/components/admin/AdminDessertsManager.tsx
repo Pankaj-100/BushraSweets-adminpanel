@@ -261,38 +261,46 @@ export function AdminDessertsManager() {
       </motion.div>
 
       {/* Dessert List */}
-      <motion.div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.2 }}>
+      <motion.div className="grid grid-cols-1  lg:grid-cols-2 xl:grid-cols-3 gap-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.2 }}>
         <AnimatePresence>
           {desserts.map((dessert, index) => (
             <motion.div key={dessert.id} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ duration: 0.3, delay: index * 0.1 }}>
-              <Card className="overflow-hidden">
-                <div className="relative mt-2">
-                  <ImageWithFallback src={dessert.dessertImages[0]} alt={dessert.dessertName} className="w-80 h-48 object-fit mx-auto  " />
-                  <div className="absolute top-2 right-2 flex gap-2">
-                    {dessert.isFeatured && <Badge className="bg-primary">Featured</Badge>}
-                    {dessert.isPopular && <Badge className="bg-orange-500">Popular</Badge>}
-                    <Badge variant={dessert.isActive ? "default" : "secondary"}>{dessert.isActive ? 'Active' : 'Inactive'}</Badge>
-                  </div>
-                </div>
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-semibold text-lg">{dessert.dessertName}</h3>
-                    <span className="text-lg font-bold text-primary">${dessert.price}</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{dessert.description}</p>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
-                    <div className="flex items-center gap-1"><Clock className="h-3 w-3" /> <span>{dessert.prepTime}</span></div>
-                    <div className="flex items-center gap-1"><Users className="h-3 w-3" /> <span>{dessert.serves}</span></div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2"><Star className="h-4 w-4 fill-yellow-400 text-yellow-400" /> <span className="text-sm">{dessert.rating} ({dessert.reviewCount})</span></div>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline" onClick={() => handleEdit(dessert)}><Edit className="h-3 w-3" /></Button>
-                      <Button size="sm" variant="outline" onClick={() => handleDelete(dessert.id!)}><Trash2 className="h-3 w-3" /></Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+             <Card className="overflow-hidden relative z-0">
+  <div className="relative mt-2">
+    <ImageWithFallback
+      src={dessert.dessertImages[0]}
+      alt={dessert.dessertName}
+      className="w-80 h-48 object-cover mx-auto"
+    />
+    <div className="absolute top-2 right-2 flex gap-2 z-10">
+      {dessert.isFeatured && <Badge className="bg-primary">Featured</Badge>}
+      {dessert.isPopular && <Badge className="bg-orange-500">Popular</Badge>}
+      <Badge variant={dessert.isActive ? "default" : "secondary"}>
+        {dessert.isActive ? "Active" : "Inactive"}
+      </Badge>
+    </div>
+  </div>
+
+  <CardContent className="p-4">
+    <div className="flex items-start justify-between mb-2">
+      <h3 className="font-semibold text-lg">{dessert.dessertName}</h3>
+      <span className="text-lg font-bold text-primary">${dessert.price}</span>
+    </div>
+    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{dessert.description}</p>
+    <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
+      <div className="flex items-center gap-1"><Clock className="h-3 w-3" /> <span>{dessert.prepTime}</span></div>
+      <div className="flex items-center gap-1"><Users className="h-3 w-3" /> <span>{dessert.serves}</span></div>
+    </div>
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-2"><Star className="h-4 w-4 fill-yellow-400 text-yellow-400" /> <span className="text-sm">{dessert.rating} ({dessert.reviewCount})</span></div>
+      <div className="flex gap-2">
+        <Button size="sm" variant="outline" onClick={() => handleEdit(dessert)}><Edit className="h-3 w-3" /></Button>
+        <Button size="sm" variant="outline" onClick={() => handleDelete(dessert.id!)}><Trash2 className="h-3 w-3" /></Button>
+      </div>
+    </div>
+  </CardContent>
+</Card>
+
             </motion.div>
           ))}
         </AnimatePresence>
