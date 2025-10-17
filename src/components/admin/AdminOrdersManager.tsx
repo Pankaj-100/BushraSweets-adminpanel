@@ -137,7 +137,16 @@ const { data: ordersCount, isLoading: countLoading } = useGetOrdersCountQuery();
     toast.success('Admin notes updated (Note: Add API endpoint to persist notes)');
   };
 
-const getStatusStats = () => {
+const getStatusStats = (): {
+  total: number;
+  pending: number;
+  confirmed: number;
+  shipped: number;
+  ready: number;
+  preparing: number;
+  delivered: number;
+  cancelled: number;
+} => {
   if (!ordersResponse?.orders || !ordersCount?.counts) {
     return {
       total: 0,
@@ -341,141 +350,141 @@ const getStatusStats = () => {
             </Card>
           ) : (
             <>
-              {orders.map((order, index) => (
-                <motion.div
-                  key={order.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
-                >
-                  <Card className="hover:shadow-lg transition-shadow">
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <div>
-                          <h3 className="font-semibold text-lg">Order #{order.id.slice(0, 8)}</h3>
-                          <p className="text-sm text-muted-foreground">
-                            {formatDate(order.createdAt)}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <Badge className={statusConfig[order.status].color}>
-                            {statusConfig[order.status].label}
-                          </Badge>
-                          <span className="font-semibold text-lg">${order.total.toFixed(2)}</span>
-                        </div>
-                      </div>
+              {orders.map((order: Order, index: number) => (
+              <motion.div
+                key={order.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+              >
+                <Card className="hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="font-semibold text-lg">Order #{order.id.slice(0, 8)}</h3>
+                    <p className="text-sm text-muted-foreground">
+                    {formatDate(order.createdAt)}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Badge className={statusConfig[order.status].color}>
+                    {statusConfig[order.status].label}
+                    </Badge>
+                    <span className="font-semibold text-lg">${order.total.toFixed(2)}</span>
+                  </div>
+                  </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                        <div className="flex items-center gap-2">
-                          <User className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm">{order.Address.fullName}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Phone className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm">{order.Address.phone}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Package className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm">{order.OrderItems.length} item{order.OrderItems.length !== 1 ? 's' : ''}</span>
-                        </div>
-                      </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{order.Address.fullName}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{order.Address.phone}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Package className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{order.OrderItems.length} item{order.OrderItems.length !== 1 ? 's' : ''}</span>
+                  </div>
+                  </div>
 
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <MapPin className="h-4 w-4" />
-                          <span className="truncate max-w-xs">
-                            {order.Address.address}, {order.Address.city}
-                          </span>
-                        </div>
-                        
-                        <div className="flex items-center gap-2">
-                          <Select
-                            value={order.status}
-                            onValueChange={(newStatus) => handleUpdateOrderStatus(order.id, newStatus as Order['status'])}
-                          >
-                            <SelectTrigger className="w-32 h-8">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {Object.entries(statusConfig).map(([status, config]) => (
-                                <SelectItem key={status} value={status}>
-                                  {config.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              setSelectedOrder(order);
-                              setIsDetailsOpen(true);
-                            }}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
+                  <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <MapPin className="h-4 w-4" />
+                    <span className="truncate max-w-xs">
+                    {order.Address.address}, {order.Address.city}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Select
+                    value={order.status}
+                    onValueChange={(newStatus: string) => handleUpdateOrderStatus(order.id, newStatus as Order['status'])}
+                    >
+                    <SelectTrigger className="w-32 h-8">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(statusConfig).map(([status, config]: [string, typeof statusConfig[keyof typeof statusConfig]]) => (
+                      <SelectItem key={status} value={status}>
+                        {config.label}
+                      </SelectItem>
+                      ))}
+                    </SelectContent>
+                    </Select>
+                    
+                    <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setSelectedOrder(order);
+                      setIsDetailsOpen(true);
+                    }}
+                    >
+                    <Eye className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  </div>
+                </CardContent>
+                </Card>
+              </motion.div>
               ))}
 
               {/* Pagination */}
               {pagination.totalPages > 1 && (
-                <div className="flex items-center justify-between pt-4">
-                  <div className="text-sm text-muted-foreground">
-                    Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, pagination.totalItems)} of {pagination.totalItems} orders
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      disabled={currentPage === 1}
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                      Previous
-                    </Button>
-                    <div className="flex items-center gap-1">
-                      {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-                        let pageNum;
-                        if (pagination.totalPages <= 5) {
-                          pageNum = i + 1;
-                        } else if (currentPage <= 3) {
-                          pageNum = i + 1;
-                        } else if (currentPage >= pagination.totalPages - 2) {
-                          pageNum = pagination.totalPages - 4 + i;
-                        } else {
-                          pageNum = currentPage - 2 + i;
-                        }
-                        
-                        return (
-                          <Button
-                            key={pageNum}
-                            variant={currentPage === pageNum ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => handlePageChange(pageNum)}
-                            className="w-8 h-8 p-0"
-                          >
-                            {pageNum}
-                          </Button>
-                        );
-                      })}
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      disabled={currentPage === pagination.totalPages}
-                    >
-                      Next
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </div>
+              <div className="flex items-center justify-between pt-4">
+                <div className="text-sm text-muted-foreground">
+                Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, pagination.totalItems)} of {pagination.totalItems} orders
                 </div>
+                <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </Button>
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i: number) => {
+                  let pageNum: number;
+                  if (pagination.totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= pagination.totalPages - 2) {
+                    pageNum = pagination.totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+                  
+                  return (
+                    <Button
+                    key={pageNum}
+                    variant={currentPage === pageNum ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handlePageChange(pageNum)}
+                    className="w-8 h-8 p-0"
+                    >
+                    {pageNum}
+                    </Button>
+                  );
+                  })}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === pagination.totalPages}
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+                </div>
+              </div>
               )}
             </>
           )}
@@ -626,7 +635,7 @@ const getStatusStats = () => {
                   <Label>Update Status</Label>
                   <Select
                     value={selectedOrder.status}
-                    onValueChange={(newStatus) => handleUpdateOrderStatus(selectedOrder.id, newStatus as Order['status'])}
+                    onValueChange={(newStatus:any) => handleUpdateOrderStatus(selectedOrder.id, newStatus as Order['status'])}
                   >
                     <SelectTrigger className="w-full mt-1">
                       <SelectValue />

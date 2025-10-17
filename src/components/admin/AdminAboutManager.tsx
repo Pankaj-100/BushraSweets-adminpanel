@@ -28,12 +28,12 @@ export function AdminAboutManager() {
   useEffect(() => {
     if (data?.about) {
       setFormData({
-        chefName: data.about.chefName,
-        professionalTitle: data.about.professionalTitle,
-        chefStory: data.about.chefStory,
-        chefPhoto: data.about.chefPhoto,
-        certification: data.about.certification,
-        experience: data.about.experience
+        chefName: data?.about.chefName,
+        professionalTitle: data?.about.professionalTitle,
+        chefStory: data?.about.chefStory,
+        chefPhoto: data?.about.chefPhoto,
+        certification: data?.about.certification,
+        experience: data?.about.experience
       });
     }
   }, [data]);
@@ -55,12 +55,12 @@ export function AdminAboutManager() {
   const handleReset = () => {
     if (data?.about) {
       setFormData({
-        chefName: data.about.chefName,
-        professionalTitle: data.about.professionalTitle,
-        chefStory: data.about.chefStory,
-        chefPhoto: data.about.chefPhoto,
-        certification: data.about.certification,
-        experience: data.about.experience
+        chefName: data?.about.chefName,
+        professionalTitle: data?.about.professionalTitle,
+        chefStory: data?.about.chefStory,
+        chefPhoto: data?.about.chefPhoto,
+        certification: data?.about.certification,
+        experience: data?.about.experience
       });
       toast.info('Changes reset to saved version');
     }
@@ -85,7 +85,7 @@ export function AdminAboutManager() {
     </div>
   );
 }
-  if (isError) return <p>Failed to load About section</p>;
+  // if (isError) return <p>Failed to load About section</p>;
 
   const sampleImages = [
     'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop',

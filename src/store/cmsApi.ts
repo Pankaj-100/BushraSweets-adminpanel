@@ -81,7 +81,10 @@ export const cmsApi = createApi({
     }),
     addDessert: builder.mutation<any, {
       dessertName: string;
-      price: number;
+      priceSingle: number|null;
+      priceDouble: number|null;
+      priceParty: number|null;
+      discountPercentage: number;
       description: string;
       dessertImages: string[];
       prepTime: string;
@@ -97,7 +100,7 @@ export const cmsApi = createApi({
       query: (body) => ({ url: "/desserts/add-dessert", method: "POST", body }),
       invalidatesTags: ["Desserts"],
     }),
-    editDessert: builder.mutation<any, { id: string; data: Partial<{ dessertName: string; price: number; description: string; dessertImages: string[]; prepTime: string; serves: string; category: string; allergens: string[]; ingredients: string[]; tags: string[]; isFeatured?: boolean; isPopular?: boolean; isActive?: boolean }> }>({
+    editDessert: builder.mutation<any, { id: string; data: Partial<{ dessertName: string;    priceSingle: number;  priceDouble: number;priceParty: number;     discountPercentage: number;description: string; dessertImages: string[]; prepTime: string; serves: string; category: string; allergens: string[]; ingredients: string[]; tags: string[]; isFeatured?: boolean; isPopular?: boolean; isActive?: boolean }> }>({
       query: ({ id, data }) => ({ url: `/desserts/edit-dessert/${id}`, method: "PATCH", body: data }),
       invalidatesTags: ["Desserts"],
     }),

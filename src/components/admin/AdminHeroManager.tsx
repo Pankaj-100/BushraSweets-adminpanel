@@ -78,7 +78,7 @@ console.log(formData);
       <Loader2 className="h-8 w-8 animate-spin text-primary" />
     </div>
   );
-  if (isError) return <p>Failed to load hero data</p>;
+
 
   return (
     <div className="space-y-6">
