@@ -41,6 +41,7 @@ interface OrderItem {
   dessertName: string;
   price: number;
   quantity: number;
+  portionSize: string;
   itemTotal: number;
   Dessert: {
     dessertImages: string[];
@@ -61,7 +62,7 @@ interface Order {
     name: string;
     email: string;
   };
-  Address: {
+  deliveryAddress: {
     fullName: string;
     phone: string;
     address: string;
@@ -378,11 +379,11 @@ const getStatusStats = (): {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{order.Address.fullName}</span>
+                    <span className="text-sm">{order.deliveryAddress.fullName}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Phone className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{order.Address.phone}</span>
+                    <span className="text-sm">{order.deliveryAddress.phone}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Package className="h-4 w-4 text-muted-foreground" />
@@ -394,7 +395,7 @@ const getStatusStats = (): {
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <MapPin className="h-4 w-4" />
                     <span className="truncate max-w-xs">
-                    {order.Address.address}, {order.Address.city}
+                    {order.deliveryAddress.address}, {order.deliveryAddress.city}
                     </span>
                   </div>
                   
@@ -534,11 +535,11 @@ const getStatusStats = (): {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div>
                       <Label>Name</Label>
-                      <p>{selectedOrder.Address.fullName}</p>
+                      <p>{selectedOrder.deliveryAddress.fullName}</p>
                     </div>
                     <div>
                       <Label>Phone</Label>
-                      <p>{selectedOrder.Address.phone}</p>
+                      <p>{selectedOrder.deliveryAddress.phone}</p>
                     </div>
                     <div>
                       <Label>Email</Label>
@@ -547,14 +548,14 @@ const getStatusStats = (): {
                     <div className="md:col-span-2">
                       <Label>Delivery Address</Label>
                       <p>
-                        {selectedOrder.Address.address}<br/>
-                        {selectedOrder.Address.city}, {selectedOrder.Address.zip}
+                        {selectedOrder.deliveryAddress.address}<br/>
+                        {selectedOrder.deliveryAddress.city}, {selectedOrder.deliveryAddress.zip}
                       </p>
                     </div>
-                    {selectedOrder.Address.instruction && (
+                    {selectedOrder.deliveryAddress.instruction && (
                       <div className="md:col-span-2">
                         <Label>Special Instructions</Label>
-                        <p className="text-muted-foreground">{selectedOrder.Address.instruction}</p>
+                        <p className="text-muted-foreground">{selectedOrder.deliveryAddress.instruction}</p>
                       </div>
                     )}
                   </div>
@@ -579,6 +580,7 @@ const getStatusStats = (): {
                           <div>
                             <p className="font-medium">{item.dessertName}</p>
                             <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
+                            <p className="text-sm text-muted-foreground">Serving: {item.portionSize}</p>
                             {item.Dessert.description && (
                               <p className="text-xs text-muted-foreground mt-1">{item.Dessert.description}</p>
                             )}
