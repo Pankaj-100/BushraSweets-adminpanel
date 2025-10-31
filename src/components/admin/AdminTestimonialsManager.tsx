@@ -131,11 +131,8 @@ export function AdminTestimonialsManager() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Testimonials Management</h2>
-          <p className="text-muted-foreground">Manage customer testimonials and reviews</p>
-        </div>
+      <div className="flex items-center justify-end">
+     
         <Button onClick={() => setIsAdding(true)} disabled={isAdding || isEditing !== null}>
           <Plus className="h-4 w-4 mr-2" />
           Add Testimonial
@@ -167,7 +164,7 @@ export function AdminTestimonialsManager() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="new-name">Customer Name *</Label>
+                    <Label htmlFor="new-name" className="mb-2 text-lg">Customer Name *</Label>
                     <Input
                       id="new-name"
                       value={editForm.name}
@@ -176,7 +173,7 @@ export function AdminTestimonialsManager() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="new-occasion">Occasion</Label>
+                    <Label htmlFor="new-occasion" className="mb-2 text-lg">Occasion</Label>
                     <Input
                       id="new-occasion"
                       value={editForm.occasion}
@@ -192,15 +189,17 @@ export function AdminTestimonialsManager() {
                   onChange={(url) => setEditForm((prev) => ({ ...prev, image: url }))}
                   label="Customer Image"
                   placeholder="Enter image URL or upload"
+                  
+                
                 />
 
                 <div>
-                  <Label>Rating</Label>
+                  <Label className="mb-2 text-lg">Rating</Label>
                   {renderStars(editForm.rating, true, (rating) => setEditForm((prev) => ({ ...prev, rating })))}
                 </div>
 
                 <div>
-                  <Label htmlFor="new-review">Review *</Label>
+                  <Label htmlFor="new-review" className="mb-2 text-lg">Review *</Label>
                   <Textarea
                     id="new-review"
                     value={editForm.review}
@@ -211,10 +210,10 @@ export function AdminTestimonialsManager() {
                 </div>
 
                 <div className="flex gap-2">
-                  <Button onClick={handleAdd}>
+                  <Button  className ="text-lg" onClick={handleAdd}>
                     <Save className="h-4 w-4 mr-2" /> Add Testimonial
                   </Button>
-                  <Button variant="outline" onClick={handleCancel}>
+                  <Button className = "text-lg" variant="outline" onClick={handleCancel}>
                     <X className="h-4 w-4 mr-2" /> Cancel
                   </Button>
                 </div>
@@ -318,7 +317,7 @@ export function AdminTestimonialsManager() {
                           <span className="text-sm text-muted-foreground">({testimonial.stars}/5)</span>
                         </div>
 
-                        <p className="text-muted-foreground italic leading-relaxed">
+                        <p className="text-muted-foreground  text-lg italic leading-relaxed">
                           "{testimonial.review}"
                         </p>
 
@@ -332,14 +331,14 @@ export function AdminTestimonialsManager() {
                               />
                             ) : (
                               <div className="w-full h-full bg-primary/10 flex items-center justify-center">
-                                <span className="text-primary font-semibold">
+                                <span className="text-primary text-lg font-semibold">
                                   {testimonial.customerName.charAt(0)}
                                 </span>
                               </div>
                             )}
                           </div>
                           <div className="flex-1">
-                            <h4 className="font-semibold">{testimonial.customerName}</h4>
+                            <h4 className="font-semibold text-xl">{testimonial.customerName}</h4>
                             {testimonial.occasion && (
                               <Badge variant="secondary" className="mt-1 text-xs">
                                 {testimonial.occasion}

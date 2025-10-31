@@ -23,22 +23,48 @@ export function AdminHeroManager() {
     ctaText: '',
     backgroundImage: '',
     description: '',
-    todaysSpecial: ''
+    todaysSpecial: '' // This stores dessert ID
   });
 
+  // Find dessert ID by name from hero response
+  const findDessertIdByName = (dessertName: string) => {
+    if (!dessertName || !dessertsData?.desserts) return '';
+    const dessert = dessertsData.desserts.find(
+      (d: any) => d.dessertName === dessertName
+    );
+    return dessert?.id || '';
+  };
+
+  // Get dessert name by ID for display
+  const getDessertNameById = (dessertId: string) => {
+    if (!dessertId || !dessertsData?.desserts) return 'N/A';
+    const dessert = dessertsData.desserts.find(
+      (d: any) => d.id === dessertId
+    );
+    return dessert?.dessertName || 'N/A';
+  };
+
+  // Get current today's special name for display
+  const getCurrentTodaysSpecialName = () => {
+    return getDessertNameById(formData.todaysSpecial);
+  };
+
   useEffect(() => {
-    if (data?.hero) {
+    if (data?.hero && dessertsData?.desserts) {
+      const todaysSpecialName = data.hero.todaysSpecial?.[0] || '';
+      const todaysSpecialId = findDessertIdByName(todaysSpecialName);
+      
       setFormData({
         title: data.hero.title || '',
         subtitle: data.hero.subtitle || '',
         ctaText: data.hero.ctaText || '',
         backgroundImage: data.hero.backgroundImage || '',
         description: data.hero.description || '',
-        todaysSpecial: data.hero.todaysSpecial?.[0] || ''
+        todaysSpecial: todaysSpecialId
       });
     }
-  }, [data]);
-console.log(formData);
+  }, [data, dessertsData]);
+
   const handleSave = async () => {
     if (!formData.title || !formData.subtitle || !formData.description) {
       toast.error('Please fill in all required fields');
@@ -46,8 +72,11 @@ console.log(formData);
     }
 
     try {
-      // API expects todaysSpecial as an array
-      await editHero({ ...formData, todaysSpecial: formData.todaysSpecial ? [formData.todaysSpecial] : [] }).unwrap();
+      // API expects todaysSpecial as an array of IDs
+      await editHero({ 
+        ...formData, 
+        todaysSpecial: formData.todaysSpecial ? [formData.todaysSpecial] : [] 
+      }).unwrap();
       toast.success('Hero section updated successfully!');
     } catch (err: any) {
       toast.error(err?.data?.message || 'Failed to update hero');
@@ -55,14 +84,17 @@ console.log(formData);
   };
 
   const handleReset = () => {
-    if (data?.hero) {
+    if (data?.hero && dessertsData?.desserts) {
+      const todaysSpecialName = data.hero.todaysSpecial?.[0] || '';
+      const todaysSpecialId = findDessertIdByName(todaysSpecialName);
+      
       setFormData({
         title: data.hero.title || '',
         subtitle: data.hero.subtitle || '',
         ctaText: data.hero.ctaText || '',
         backgroundImage: data.hero.backgroundImage || '',
         description: data.hero.description || '',
-        todaysSpecial: data.hero.todaysSpecial?.[0] || ''
+        todaysSpecial: todaysSpecialId
       });
       toast.info('Changes reset to saved version');
     }
@@ -78,7 +110,6 @@ console.log(formData);
       <Loader2 className="h-8 w-8 animate-spin text-primary" />
     </div>
   );
-
 
   return (
     <div className="space-y-6">
@@ -96,18 +127,17 @@ console.log(formData);
             <CardContent className="space-y-6">
 
               <div>
-                <Label htmlFor="title">Main Title *</Label>
+                <Label htmlFor="title" className="mb-2 text-lg">Main Title *</Label>
                 <Input
                   id="title"
                   value={formData.title}
                   onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                   placeholder="e.g., Authentic South Asian Desserts"
-                  className="text-lg"
                 />
               </div>
 
               <div>
-                <Label htmlFor="subtitle">Subtitle *</Label>
+                <Label htmlFor="subtitle" className="mb-2 text-lg" >Subtitle *</Label>
                 <Textarea
                   id="subtitle"
                   value={formData.subtitle}
@@ -118,7 +148,7 @@ console.log(formData);
               </div>
 
               <div>
-                <Label htmlFor="description">Description *</Label>
+                <Label htmlFor="description" className="mb-2 text-lg">Description *</Label>
                 <Textarea
                   id="description"
                   value={formData.description}
@@ -129,22 +159,29 @@ console.log(formData);
               </div>
 
               <div>
-                <Label htmlFor="todaysSpecial">Today's Special</Label>
+                <Label htmlFor="todaysSpecial" className="mb-2 text-lg">Today's Special</Label>
                 <select
                   id="todaysSpecial"
                   value={formData.todaysSpecial}
                   onChange={(e) => setFormData(prev => ({ ...prev, todaysSpecial: e.target.value }))}
-                  className="w-full border rounded px-2 py-1"
+                  className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   <option value="">-- Select Dessert --</option>
                   {dessertsData?.desserts?.map((dessert: any) => (
-                    <option key={dessert.id} value={dessert.id}>{dessert.dessertName}</option>
+                    <option key={dessert.id} value={dessert.id}>
+                      {dessert.dessertName}
+                    </option>
                   ))}
                 </select>
+                {formData.todaysSpecial && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Current selection: {getCurrentTodaysSpecialName()}
+                  </p>
+                )}
               </div>
 
               <div>
-                <Label htmlFor="ctaText">Call-to-Action Button Text</Label>
+                <Label htmlFor="ctaText" className="mb-2 text-lg">Call-to-Action Button Text</Label>
                 <Input
                   id="ctaText"
                   value={formData.ctaText}
@@ -154,16 +191,16 @@ console.log(formData);
               </div>
 
               <div>
-                <Label>Background Image</Label>
                 <ImageUploadComponent
                   value={formData.backgroundImage}
+                  label='Background Image'
                   onChange={(url) => setFormData(prev => ({ ...prev, backgroundImage: url }))}
                   placeholder="Enter image URL or upload file"
                 />
               </div>
 
               <div>
-                <Label>Quick Select Backgrounds</Label>
+                <Label className="mb-2 text-lg">Quick Select Backgrounds</Label>
                 <div className="grid grid-cols-2 gap-2 mt-2">
                   {sampleBackgrounds.map((url, index) => (
                     <div
@@ -232,7 +269,7 @@ console.log(formData);
                     </Button>
                     {formData.todaysSpecial && (
                       <p className="text-sm mt-2">
-                        Today's Special: {formData.todaysSpecial || 'N/A'}
+                        Today's Special: {getCurrentTodaysSpecialName()}
                       </p>
                     )}
                   </div>

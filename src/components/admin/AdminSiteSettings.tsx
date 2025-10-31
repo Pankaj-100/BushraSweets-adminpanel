@@ -145,11 +145,11 @@ export function AdminSiteSettings() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex items-center justify-end">
+        {/* <div>
           <h2 className="text-2xl font-bold">Site Settings</h2>
           <p className="text-muted-foreground">Manage your business information and social media presence</p>
-        </div>
+        </div> */}
         <Button onClick={handleSave} disabled={isSavingBusiness || isSavingSocials}>
           <Save className="h-4 w-4 mr-2" />
           {isSavingBusiness || isSavingSocials ? 'Saving...' : 'Save Changes'}
@@ -157,32 +157,32 @@ export function AdminSiteSettings() {
       </div>
 
       <Tabs defaultValue="business" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="business">Business Information</TabsTrigger>
-          <TabsTrigger value="social">Social Media</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 ">
+          <TabsTrigger value="business" className="text-lg">Business Information</TabsTrigger>
+          <TabsTrigger value="social" className="text-lg">Social Media</TabsTrigger>
         </TabsList>
 
         <TabsContent value="business" className="space-y-6">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2"><MapPin className="h-5 w-5" /> Business Information</CardTitle>
+                <CardTitle className="flex items-center gap-2 text-lg"><MapPin className="h-5 w-5" /> Business Information</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="businessName">Business Name</Label>
+                  <Label htmlFor="businessName" className="mb-2 text-lg">Business Name</Label>
                   <Input id="businessName" name="businessName" value={businessSettings.businessName} onChange={handleBusinessChange} placeholder="Your business name" />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="number">Phone Number</Label>
+                    <Label htmlFor="number" className="mb-2 text-lg">Phone Number</Label>
                     <div className="relative">
                       <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input id="number" name="number" value={businessSettings.number} onChange={handleBusinessChange} placeholder="(555) 123-4567" className="pl-10" />
                     </div>
                   </div>
                   <div>
-                    <Label htmlFor="email">Email Address</Label>
+                    <Label htmlFor="email" className="mb-2 text-lg">Email Address</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input id="email" name="email" type="email" value={businessSettings.email} onChange={handleBusinessChange} placeholder="hello@bushrassweets.com" className="pl-10" />
@@ -190,25 +190,25 @@ export function AdminSiteSettings() {
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="address">Business Address</Label>
+                  <Label htmlFor="address" className="mb-2 text-lg">Business Address</Label>
                   <Textarea id="address" name="address" value={businessSettings.address} onChange={handleBusinessChange} placeholder="123 Sweet Lane, Flavor Town, ST 12345" className="pl-3" rows={3} />
                 </div>
                 <div>
-                  <Label htmlFor="deliveryInfo">Delivery Information</Label>
+                  <Label htmlFor="deliveryInfo" className="mb-2 text-lg ">Delivery Information</Label>
                   <Textarea id="deliveryInfo" name="deliveryInfo" value={businessSettings.deliveryInfo} onChange={handleBusinessChange} placeholder="Free delivery on orders over $50" className="pl-3" rows={2} />
                 </div>
                 {/* New Business Hours Fields */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <Label htmlFor="businessHoursMondayFriday">Business Hours (Mon-Fri)</Label>
+                    <Label htmlFor="businessHoursMondayFriday" className="mb-2 text-lg">Business Hours (Mon-Fri)</Label>
                     <Input id="businessHoursMondayFriday" name="businessHoursMondayFriday" value={businessSettings.businessHoursMondayFriday} onChange={handleBusinessChange} placeholder="09:00 AM - 06:00 PM" />
                   </div>
                   <div>
-                    <Label htmlFor="businessHoursSaturday">Business Hours (Sat)</Label>
+                    <Label htmlFor="businessHoursSaturday" className="mb-2 text-lg">Business Hours (Sat)</Label>
                     <Input id="businessHoursSaturday" name="businessHoursSaturday" value={businessSettings.businessHoursSaturday} onChange={handleBusinessChange} placeholder="10:00 AM - 04:00 PM" />
                   </div>
                   <div>
-                    <Label htmlFor="businessHoursSunday">Business Hours (Sun)</Label>
+                    <Label htmlFor="businessHoursSunday" className="mb-2 text-lg">Business Hours (Sun)</Label>
                     <Input id="businessHoursSunday" name="businessHoursSunday" value={businessSettings.businessHoursSunday} onChange={handleBusinessChange} placeholder="Closed" />
                   </div>
                 </div>

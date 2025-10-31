@@ -78,7 +78,7 @@ const initialDessertData: Omit<AdminDessert, "id"> = {
   serves: "",
   category: "Traditional",
   isPopular: false,
-  isFeatured: true,
+  isFeatured: false,
   allergens: [],
   ingredients: [],
   isActive: true,
@@ -118,7 +118,7 @@ export function AdminDessertsManager() {
 
     try {
       if (editingDessert?.id) {
-        await editDessert({ id: editingDessert.id, data: formData }).unwrap();
+        await editDessert({ id: editingDessert?.id, data: formData }).unwrap();
         toast.success("Dessert updated successfully!");
       } else {
         await addDessert(formData).unwrap();
@@ -205,7 +205,7 @@ export function AdminDessertsManager() {
       >
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => resetForm()}>
+            <Button onClick={() => resetForm()} className="text-lg font-semibold">
               <Plus className="h-4 w-4 mr-2" /> Add New Dessert
             </Button>
           </DialogTrigger>
@@ -217,7 +217,7 @@ export function AdminDessertsManager() {
               <DialogDescription>
                 {editingDessert
                   ? "Edit your dessert and save changes."
-                  : "Add a new dessert to your catalog."}
+                  : "Add a new dessert to your catalog. Fill in all required fields to create your dessert"}
               </DialogDescription>
             </DialogHeader>
 
@@ -225,8 +225,9 @@ export function AdminDessertsManager() {
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label>Dessert Name *</Label>
+                  <Label className="mb-2">Dessert Name *</Label>
                   <Input
+                  placeholder="Desert Name"
                     value={formData.dessertName}
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -237,7 +238,7 @@ export function AdminDessertsManager() {
                   />
                 </div>
                 <div>
-                  <Label>Discount (%)</Label>
+                  <Label className="mb-2">Discount (%)</Label>
                   <Input
                     type="number"
                     value={formData.discountPercentage}
@@ -254,9 +255,10 @@ export function AdminDessertsManager() {
               {/* Price Fields */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <Label>Single Price</Label>
+                  <Label className="mb-2">Single Price *</Label>
                   <Input
                     type="number"
+                    placeholder="0"
                     value={formData.priceSingle ?? ""}
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -267,9 +269,10 @@ export function AdminDessertsManager() {
                   />
                 </div>
                 <div>
-                  <Label>Double Price</Label>
+                  <Label className="mb-2">Double Price</Label>
                   <Input
                     type="number"
+                    placeholder="0"
                     value={formData.priceDouble ?? ""}
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -280,9 +283,10 @@ export function AdminDessertsManager() {
                   />
                 </div>
                 <div>
-                  <Label>Party Price</Label>
+                  <Label className="mb-2">Party Price</Label>
                   <Input
                     type="number"
+                    placeholder="0"
                     value={formData.priceParty ?? ""}
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -295,8 +299,9 @@ export function AdminDessertsManager() {
               </div>
 
               <div>
-                <Label>Description *</Label>
+                <Label className="mb-2">Description *</Label>
                 <Textarea
+                placeholder="Describe your Desert ..."
                   value={formData.description}
                   onChange={(e) =>
                     setFormData((prev) => ({
@@ -321,8 +326,9 @@ export function AdminDessertsManager() {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <Label>Prep Time</Label>
+                  <Label className="mb-2">Prep Time</Label>
                   <Input
+                  placeholder="mins"
                     value={formData.prepTime}
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -333,8 +339,9 @@ export function AdminDessertsManager() {
                   />
                 </div>
                 <div>
-                  <Label>Serves</Label>
+                  <Label className="mb-2">Serves</Label>
                   <Input
+                  placeholder="1-2"
                     value={formData.serves}
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -345,7 +352,7 @@ export function AdminDessertsManager() {
                   />
                 </div>
                 <div>
-                  <Label>Category</Label>
+                  <Label className="mb-2">Category</Label>
                   <Select
                     value={formData.category}
                     onValueChange={(value: any) =>
@@ -367,7 +374,7 @@ export function AdminDessertsManager() {
 
               {/* Allergens */}
               <div>
-                <Label>Allergens</Label>
+                <Label className="mb-2">Allergens</Label>
                 <div className="flex gap-2 mb-2">
                   <Input
                     value={allergenInput}
@@ -397,7 +404,7 @@ export function AdminDessertsManager() {
 
               {/* Ingredients */}
               <div>
-                <Label>Ingredients</Label>
+                <Label className="mb-2">Ingredients</Label>
                 <div className="flex gap-2 mb-2">
                   <Input
                     value={ingredientInput}
@@ -522,17 +529,17 @@ export function AdminDessertsManager() {
 
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-semibold text-lg">
+                    <h3 className="font-semibold text-xl">
                       {dessert.dessertName}
                     </h3>
-                    <span className="text-lg font-bold text-primary">
-                      ${dessert.priceSingle.toFixed(2)}
+                    <span className="text-xl font-bold text-primary">
+                      ${dessert?.priceSingle.toFixed(2)}
                     </span>
                   </div>
-                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                  <p className="text-lg text-muted-foreground mb-3 line-clamp-2">
                     {dessert.description}
                   </p>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
+                  <div className="flex items-center gap-4 text-md text-muted-foreground mb-3">
                     <div className="flex items-center gap-1">
                       <Clock className="h-3 w-3" />{" "}
                       <span>{dessert.prepTime}</span>
@@ -543,12 +550,7 @@ export function AdminDessertsManager() {
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />{" "}
-                      <span className="text-sm">
-                        {dessert.rating} ({dessert.reviewCount})
-                      </span>
-                    </div>
+                  
                     <div className="flex gap-2">
                       <Button
                         size="sm"

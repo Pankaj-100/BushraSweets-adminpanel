@@ -77,7 +77,7 @@ export function ImageUploadComponent({
   return (
     <div className={`space-y-4 ${className}`}>
       <div>
-        <Label htmlFor="image-input">{label}</Label>
+        <Label htmlFor="image-input" className="text-lg mb-2">{label}</Label>
         <div className="flex gap-2 mt-1">
           <Input
             id="image-input"

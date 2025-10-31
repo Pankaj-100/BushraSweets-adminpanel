@@ -106,14 +106,14 @@ export function AdminAboutManager() {
           {/* Basic Info */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-xl font-bold">
                 <User className="h-5 w-5" />
                 Chef Information
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="chefName">Chef Name *</Label>
+                <Label htmlFor="chefName" className="mb-2 text-lg">Chef Name *</Label>
                 <Input
                   id="chefName"
                   value={formData.chefName}
@@ -122,7 +122,7 @@ export function AdminAboutManager() {
               </div>
 
               <div>
-                <Label htmlFor="professionalTitle">Professional Title</Label>
+                <Label htmlFor="professionalTitle" className="mb-2 text-lg">Professional Title</Label>
                 <Input
                   id="professionalTitle"
                   value={formData.professionalTitle}
@@ -131,16 +131,17 @@ export function AdminAboutManager() {
               </div>
 
               <div>
-                <Label>Chef Photo</Label>
+              
                 <ImageUploadComponent
                   value={formData.chefPhoto}
                   onChange={(url) => setFormData(prev => ({ ...prev, chefPhoto: url }))}
                   onFileUpload={handleImageUpload}
                   placeholder="Enter URL or upload file"
+                  label="Chef Photo"
                 />
 
                 {/* Sample Photos */}
-                <div className="grid grid-cols-2 gap-2 mt-2">
+                {/* <div className="grid grid-cols-2 gap-2 mt-2">
                   {sampleImages.map((url, idx) => (
                     <div
                       key={idx}
@@ -157,7 +158,7 @@ export function AdminAboutManager() {
                       )}
                     </div>
                   ))}
-                </div>
+                </div> */}
               </div>
             </CardContent>
           </Card>
@@ -165,14 +166,14 @@ export function AdminAboutManager() {
           {/* Story & Credentials */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-lg font-bold">
                 <FileText className="h-5 w-5" />
                 Story & Credentials
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="chefStory">Chef's Story *</Label>
+                <Label htmlFor="chefStory" className="mb-2 text-lg">Chef's Story *</Label>
                 <Textarea
                   id="chefStory"
                   value={formData.chefStory}
@@ -182,7 +183,7 @@ export function AdminAboutManager() {
               </div>
 
               <div>
-                <Label htmlFor="certification">Certification</Label>
+                <Label htmlFor="certification" className="mb-2 text-lg">Certification</Label>
                 <Input
                   id="certification"
                   value={formData.certification}
@@ -191,7 +192,7 @@ export function AdminAboutManager() {
               </div>
 
               <div>
-                <Label htmlFor="experience">Experience</Label>
+                <Label htmlFor="experience" className="mb-2 text-lg">Experience</Label>
                 <Input
                   id="experience"
                   value={formData.experience}

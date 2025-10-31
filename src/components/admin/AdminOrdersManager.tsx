@@ -164,14 +164,14 @@ const getStatusStats = (): {
   // Use the counts from the ordersCount API if available
   if (ordersCount.counts) {
     return {
-      total: ordersCount.counts.total,
-      pending: ordersCount.counts.byStatus.pending || 0,
-      confirmed: ordersCount.counts.byStatus.confirmed || 0,
-      shipped: ordersCount.counts.byStatus.shipped || 0,
-      ready: ordersCount.counts.byStatus.ready || 0,
-      preparing: ordersCount.counts.byStatus.preparing || 0,
-      delivered: ordersCount.counts.byStatus.delivered || 0,
-      cancelled: ordersCount.counts.byStatus.cancelled || 0
+      total: ordersCount?.counts?.total,
+      pending: ordersCount?.counts?.byStatus?.pending || 0,
+      confirmed: ordersCount?.counts?.byStatus?.confirmed || 0,
+      shipped: ordersCount?.counts?.byStatus?.shipped || 0,
+      ready: ordersCount?.counts?.byStatus?.ready || 0,
+      preparing: ordersCount?.counts?.byStatus?.preparing || 0,
+      delivered: ordersCount?.counts?.byStatus?.delivered || 0,
+      cancelled: ordersCount?.counts?.byStatus?.cancelled || 0
     };
   }
 
@@ -236,10 +236,7 @@ const getStatusStats = (): {
         transition={{ duration: 0.6 }}
       >
         <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-2xl font-bold mb-2">Orders Management</h2>
-            <p className="text-muted-foreground">View and manage customer orders</p>
-          </div>
+        
           <Button onClick={refetch} variant="outline" className="flex items-center gap-2">
             <RefreshCw className="h-4 w-4" />
             Refresh
@@ -252,7 +249,7 @@ const getStatusStats = (): {
             <CardContent className="p-4 text-center">
               <ShoppingBag className="h-6 w-6 mx-auto text-primary mb-2" />
               <div className="text-2xl font-bold">{stats.total}</div>
-              <div className="text-xs text-muted-foreground">Total Orders</div>
+              <div className="text-lg text-muted-foreground">Total Orders</div>
             </CardContent>
           </Card>
           
@@ -261,7 +258,7 @@ const getStatusStats = (): {
               <CardContent className="p-4 text-center">
                 <config.icon className="h-6 w-6 mx-auto mb-2" style={{ color: config.color.split(' ')[1].replace('text-', '') }} />
                 <div className="text-2xl font-bold">{stats[status as keyof typeof stats]}</div>
-                <div className="text-xs text-muted-foreground">{config.label}</div>
+                <div className="text-lg text-muted-foreground">{config.label}</div>
               </CardContent>
             </Card>
           ))}
@@ -284,7 +281,7 @@ const getStatusStats = (): {
                     placeholder="Search orders, customers, or items..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 text-lg  "
                   />
                 </div>
               </div>
@@ -363,43 +360,43 @@ const getStatusStats = (): {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className="font-semibold text-lg">Order #{order.id.slice(0, 8)}</h3>
-                    <p className="text-sm text-muted-foreground">
+                    <h3 className="font-semibold text-xl">Order #{order.id.slice(0, 8)}</h3>
+                    <p className="text-md text-muted-foreground">
                     {formatDate(order.createdAt)}
                     </p>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Badge className={statusConfig[order.status].color}>
+                  <div className="flex items-center gap-3 ">
+                    <Badge className={statusConfig[order.status].color} >
                     {statusConfig[order.status].label}
                     </Badge>
-                    <span className="font-semibold text-lg">${order.total.toFixed(2)}</span>
+                    <span className="font-semibold text-xl">${order.total.toFixed(2)}</span>
                   </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{order.deliveryAddress.fullName}</span>
+                    <span className="text-lg">{order.deliveryAddress.fullName}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Phone className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{order.deliveryAddress.phone}</span>
+                    <span className="text-lg">{order.deliveryAddress.phone}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Package className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{order.OrderItems.length} item{order.OrderItems.length !== 1 ? 's' : ''}</span>
+                    <span className="text-lg">{order.OrderItems.length} item{order.OrderItems.length !== 1 ? 's' : ''}</span>
                   </div>
                   </div>
 
                   <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <MapPin className="h-4 w-4" />
-                    <span className="truncate max-w-xs">
+                    <span className="truncate max-w-xs text-lg">
                     {order.deliveryAddress.address}, {order.deliveryAddress.city}
                     </span>
                   </div>
                   
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 ">
                     <Select
                     value={order.status}
                     onValueChange={(newStatus: string) => handleUpdateOrderStatus(order.id, newStatus as Order['status'])}
@@ -417,7 +414,7 @@ const getStatusStats = (): {
                     </Select>
                     
                     <Button
-                    size="sm"
+                    size="lg"
                     variant="outline"
                     onClick={() => {
                       setSelectedOrder(order);

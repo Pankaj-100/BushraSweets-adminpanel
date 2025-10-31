@@ -112,35 +112,35 @@ export function AdminServingIdeasManager() {
     <div className="space-y-6">
       {/* Header */}
       <motion.div className="flex items-center justify-between" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-        <div>
+        {/* <div>
           <h2 className="text-2xl font-bold mb-2">Serving Ideas Management</h2>
           <p className="text-muted-foreground">Manage occasion-based serving suggestions and celebration ideas</p>
-        </div>
+        </div> */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={resetForm}>
+            <Button onClick={resetForm} className="text-lg">
               <Plus className="h-4 w-4 mr-2" />
               Add New Idea
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl t">
             <DialogHeader>
-              <DialogTitle>{editingIdea ? 'Edit Serving Idea' : 'Add New Serving Idea'}</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className="text-lg">{editingIdea ? 'Edit Serving Idea' : 'Add New Serving Idea'}</DialogTitle>
+              <DialogDescription className="text-lg">
                 {editingIdea ? 'Update your serving idea with occasion-specific details and imagery.' : 'Create a new serving idea to showcase how your desserts fit different occasions and celebrations.'}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-6">
               <div>
-                <Label htmlFor="title">Title *</Label>
+                <Label htmlFor="title" className="mb-2 text-lg">Title *</Label>
                 <Input id="title" value={formData.title} onChange={e => setFormData(prev => ({ ...prev, title: e.target.value }))} placeholder="e.g., Eid Celebrations" />
               </div>
               <div>
-                <Label htmlFor="description">Description *</Label>
+                <Label htmlFor="description" className="mb-2 text-lg">Description *</Label>
                 <Textarea id="description" value={formData.description} onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} placeholder="Describe how your desserts fit this occasion..." rows={3} />
               </div>
               <div>
-                <Label htmlFor="occasion">Occasion Type</Label>
+                <Label htmlFor="occasion" className="mb-2 text-lg">Occasion Type</Label>
 <Select value={formData.occasionType} onValueChange={(value: string) => setFormData(prev => ({ ...prev, occasionType: value }))}>
                   <SelectTrigger>
                     <SelectValue />
@@ -165,7 +165,7 @@ export function AdminServingIdeasManager() {
               </div>
 
               <div className="flex gap-2 pt-4">
-                <Button onClick={handleSave} className="flex-1">
+                <Button onClick={handleSave} className="flex-1 text-lg">
                   <Save className="h-4 w-4 mr-2" />
                   {editingIdea ? 'Update' : 'Create'} Idea
                 </Button>
