@@ -38,7 +38,7 @@ function InquiryDetailsModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg max-h-[80vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>
             {type === "event" ? "Event Inquiry Details" : "General Inquiry Details"}
@@ -48,30 +48,33 @@ function InquiryDetailsModal({
           </DialogDescription>
         </DialogHeader>
 
-        {type === "event" ? (
-          <div className="space-y-3 text-sm">
-            <p><strong>Name:</strong> {inquiry.firstName} {inquiry.lastName}</p>
-            <p><strong>Email:</strong> {inquiry.email}</p>
-            <p><strong>Phone:</strong> {inquiry.phone}</p>
-            <p><strong>Event Type:</strong> {inquiry.eventType}</p>
-            <p><strong>Guests:</strong> {inquiry.numberOfGuests}</p>
-            <p><strong>Budget:</strong> {inquiry.budgetRange || "N/A"}</p>
-            <p><strong>Event Date:</strong> {new Date(inquiry.eventDate).toDateString()}</p>
-            <p><strong>Delivery Address:</strong> {inquiry.deliveryAddress}</p>
-            <p><strong>Contact Method:</strong> {inquiry.contactMethod || "N/A"}</p>
-            <p><strong>Allergies:</strong> {inquiry.allergiesRestrictions || "None"}</p>
-            <p><strong>Special Request:</strong> {inquiry.specialRequest || "N/A"}</p>
-            <p><strong>Additional Message:</strong> {inquiry.additionalMessage || "N/A"}</p>
-          </div>
-        ) : (
-          <div className="space-y-3 text-sm">
-            <p><strong>Name:</strong> {inquiry.name}</p>
-            <p><strong>Email:</strong> {inquiry.email}</p>
-            <p><strong>Phone:</strong> {inquiry.phone}</p>
-            <p><strong>Subject:</strong> {inquiry.subject}</p>
-            <p><strong>Message:</strong> {inquiry.message}</p>
-          </div>
-        )}
+        {/* Scrollable content area */}
+        <div className="flex-1 overflow-y-auto pr-2">
+          {type === "event" ? (
+            <div className="space-y-3 text-sm">
+              <p><strong>Name:</strong> {inquiry.firstName} {inquiry.lastName}</p>
+              <p><strong>Email:</strong> {inquiry.email}</p>
+              <p><strong>Phone:</strong> {inquiry.phone}</p>
+              <p><strong>Event Type:</strong> {inquiry.eventType}</p>
+              <p><strong>Guests:</strong> {inquiry.numberOfGuests}</p>
+              <p><strong>Budget:</strong> {inquiry.budgetRange || "N/A"}</p>
+              <p><strong>Event Date:</strong> {new Date(inquiry.eventDate).toDateString()}</p>
+              <p><strong>Delivery Address:</strong> {inquiry.deliveryAddress}</p>
+              <p><strong>Contact Method:</strong> {inquiry.contactMethod || "N/A"}</p>
+              <p><strong>Allergies:</strong> {inquiry.allergiesRestrictions || "None"}</p>
+              <p><strong>Special Request:</strong> {inquiry.specialRequest || "N/A"}</p>
+              <p><strong>Additional Message:</strong> {inquiry.additionalMessage || "N/A"}</p>
+            </div>
+          ) : (
+            <div className="space-y-3 text-sm">
+              <p><strong>Name:</strong> {inquiry.name}</p>
+              <p><strong>Email:</strong> {inquiry.email}</p>
+              <p><strong>Phone:</strong> {inquiry.phone}</p>
+              <p><strong>Subject:</strong> {inquiry.subject}</p>
+              <p><strong>Message:</strong> {inquiry.message}</p>
+            </div>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
@@ -124,7 +127,6 @@ export function AdminInquiries() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold">Inquiries</h2>
       </div>
 
       <Tabs defaultValue="event" className="space-y-6">

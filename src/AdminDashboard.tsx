@@ -29,6 +29,9 @@ import { Input } from './components/ui/input';
 import { useContent } from './components/ContentContext';
 import { AdminInquiries } from './components/admin/AdminInquiry';
 
+// Import API hooks
+import { useGetDashboardCountsQuery, useGetContentStatsQuery } from './store/orderApi';
+
 type AdminSectionType = 'dashboard' | 'desserts' | 'hero' | 'about' | 'serving-ideas' | 'testimonials' | 'orders' | 'settings' | 'payments' | 'inquiries' | 'privacy-policy' | 'terms-of-service' | 'refund-policy' | 'food-safety';
 
 interface AdminDashboardProps {
@@ -39,7 +42,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const { content, isLoading } = useContent();
   const navigate = useNavigate();
   const location = useLocation();
-   const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false);
+  
+  // API calls for dashboard data
+  const { data: dashboardCounts, isLoading: dashboardLoading } = useGetDashboardCountsQuery();
+  const { data: contentStats, isLoading: contentStatsLoading } = useGetContentStatsQuery();
+
   // Extract section from URL path
   const getCurrentSectionFromPath = (): AdminSectionType => {
     const path = location.pathname;
@@ -64,9 +72,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     totalDesserts: 0,
     activeOrders: 0,
     totalTestimonials: 0,
-    configuredGateways: 0,
+    configuredGateways: 1, // Static value as requested
     pendingOrders: 0,
-    completedOrders: 0
+    completedOrders: 0,
+    activeDesserts: 0,
+    featuredDesserts: 0,
+    servingIdeas: 0
   });
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState([
@@ -81,67 +92,53 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   }, [location.pathname]);
   
   const sidebarRef = React.useRef<HTMLDivElement | null>(null);
-const buttonRef = React.useRef<HTMLButtonElement | null>(null);
-
-useEffect(() => {
-  const handleClickOutside = (event: MouseEvent) => {
-    if (
-      sidebarRef.current &&
-      !sidebarRef.current.contains(event.target as Node) &&
-      buttonRef.current &&
-      !buttonRef.current.contains(event.target as Node)
-    ) {
-      setMobileMenuOpen(false);
-    }
-  };
-
-  if (mobileMenuOpen) {
-    document.addEventListener("mousedown", handleClickOutside);
-  } else {
-    document.removeEventListener("mousedown", handleClickOutside);
-  }
-
-  return () => {
-    document.removeEventListener("mousedown", handleClickOutside);
-  };
-}, [mobileMenuOpen]);
-
+  const buttonRef = React.useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
-    if (isLoading || !content) return;
-
-    const updateDashboardData = () => {
-      const orders = JSON.parse(localStorage.getItem('customer-orders') || '[]');
-      const activeOrders = orders.filter((order: any) => 
-        ['pending', 'confirmed', 'preparing', 'ready'].includes(order.status)
-      ).length;
-      
-      const pendingOrders = orders.filter((order: any) => 
-        order.status === 'pending'
-      ).length;
-      
-      const completedOrders = orders.filter((order: any) => 
-        order.status === 'completed'
-      ).length;
-
-      const gateways = JSON.parse(localStorage.getItem('payment-gateways') || '[]');
-      const configuredGateways = gateways.filter((gateway: any) => gateway.enabled).length;
-
-      setDashboardData({
-        totalDesserts: content.desserts?.length || 0,
-        activeOrders,
-        totalTestimonials: content.testimonials?.length || 0,
-        configuredGateways,
-        pendingOrders,
-        completedOrders
-      });
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target as Node) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target as Node)
+      ) {
+        setMobileMenuOpen(false);
+      }
     };
 
-    updateDashboardData();
-    
-    const interval = setInterval(updateDashboardData, 30000);
-    return () => clearInterval(interval);
-  }, [content, isLoading]);
+    if (mobileMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [mobileMenuOpen]);
+
+  // Update dashboard data when API responses are received
+  useEffect(() => {
+    if (dashboardCounts?.data) {
+      setDashboardData(prev => ({
+        ...prev,
+        totalDesserts: dashboardCounts.data.totalDesserts || 0,
+        activeOrders: dashboardCounts.data.activeOrders || 0,
+        totalTestimonials: dashboardCounts.data.testimonials || 0
+      }));
+    }
+  }, [dashboardCounts]);
+
+  useEffect(() => {
+    if (contentStats?.data) {
+      setDashboardData(prev => ({
+        ...prev,
+        activeDesserts: contentStats.data.activeDesserts || 0,
+        featuredDesserts: contentStats.data.featuredDesserts || 0,
+        servingIdeas: contentStats.data.servingIdeas || 0
+      }));
+    }
+  }, [contentStats]);
 
   const handleSectionChange = (section: AdminSectionType) => {
     setCurrentSection(section);
@@ -221,16 +218,16 @@ useEffect(() => {
         return (
           <div className="space-y-6">
             {/* Stats Overview */}
-            <div className="grid grid-cols-4  lg:grid-cols-4 gap-6 ">
-           
-              <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 ">
+            <div className="grid grid-cols-4 lg:grid-cols-4 gap-6">
+              <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
                 <CardContent className="p-6">
-                  <div className="flex items-center justify-between " onClick={() => handleSectionChange('desserts')}>
+                  <div className="flex items-center justify-between" onClick={() => handleSectionChange('desserts')}>
                     <div>
                       <p className="text-2xl font-medium text-blue-600 mb-1">Total Desserts</p>
-                      <p className="text-2xl font-bold text-blue-800">{dashboardData.totalDesserts}</p>
-                      <p className="text-xs text-blue-500 mt-1">
+                      <p className="text-2xl font-bold text-blue-800">
+                        {dashboardLoading ? '...' : dashboardData.totalDesserts}
                       </p>
+                  
                     </div>
                     <div className="text-blue-600 bg-blue-100 p-3 rounded-full">
                       <Package className="h-6 w-6" />
@@ -243,10 +240,11 @@ useEffect(() => {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between" onClick={() => handleSectionChange('orders')}>
                     <div>
-                      <p className="text-2xl font-medium  text-green-600 mb-1">Active Orders</p>
-                      <p className="text-2xl font-bold text-green-800">{dashboardData.activeOrders}</p>
-                      <p className="text-xs text-green-500 mt-1">
+                      <p className="text-2xl font-medium text-green-600 mb-1">Active Orders</p>
+                      <p className="text-2xl font-bold text-green-800">
+                        {dashboardLoading ? '...' : dashboardData.activeOrders}
                       </p>
+                   
                     </div>
                     <div className="text-green-600 bg-green-100 p-3 rounded-full">
                       <ShoppingBag className="h-6 w-6" />
@@ -259,12 +257,13 @@ useEffect(() => {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between" onClick={() => handleSectionChange('testimonials')}>
                     <div>
-                      <p className="text-2xl font-medium  text-pink-600 mb-1">Testimonials</p>
-                      <p className="text-2xl font-bold text-pink-600">{dashboardData.totalTestimonials}</p>
-                      <p className="text-xs text-pink-500 mt-1">
+                      <p className="text-2xl font-medium text-pink-600 mb-1">Testimonials</p>
+                      <p className="text-2xl font-bold text-pink-600">
+                        {dashboardLoading ? '...' : dashboardData.totalTestimonials}
                       </p>
+                    
                     </div>
-                    <div className="text-pink-600  p-3 rounded-full bg-pink-100">
+                    <div className="text-pink-600 p-3 rounded-full bg-pink-100">
                       <Quote className="h-6 w-6" />
                     </div>
                   </div>
@@ -275,10 +274,11 @@ useEffect(() => {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between" onClick={() => handleSectionChange('payments')}>
                     <div>
-                      <p className="text-2xl font-medium  text-purple-600 mb-1">Payment Gateways</p>
-                      <p className="text-2xl font-bold text-purple-800">{dashboardData.configuredGateways}</p>
-                      <p className="text-xs text-purple-500 mt-1">
+                      <p className="text-2xl font-medium text-purple-600 mb-1">Payment Gateways</p>
+                      <p className="text-2xl font-bold text-purple-800">
+                        {dashboardData.configuredGateways}
                       </p>
+                    
                     </div>
                     <div className="text-purple-600 bg-purple-100 p-3 rounded-full">
                       <CreditCard className="h-6 w-6" />
@@ -288,8 +288,7 @@ useEffect(() => {
               </Card>
             </div>
 
-
-   {/* Quick Actions */}
+            {/* Quick Actions */}
             <Card>
               <CardHeader>
                 <CardTitle>Quick Actions</CardTitle>
@@ -332,36 +331,37 @@ useEffect(() => {
                 </div>
               </CardContent>
             </Card>
+
             {/* Charts and Activity */}
             <div className="grid grid-cols-4 lg:grid-cols-4 gap-6 center">
               <div></div>
-           <Card>
+              <Card>
                 <CardHeader>
-                  <CardTitle>System status</CardTitle>
+                  <CardTitle>System Status</CardTitle>
                   <CardDescription></CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <span className="text-xl">Website Status</span>
-                      <span className="font-medium text-green-600">Online
-                      </span>
+                      <span className="font-medium text-green-600">Online</span>
                     </div>
                     <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <span className="text-xl">Orders Processing</span>
-                      <span className="font-medium text-green-600">0
+                      <span className="font-medium text-green-600">
+                        {dashboardLoading ? '...' : dashboardData.activeOrders}
                       </span>
                     </div>
                     <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <span className="text-xl">Payment gateway</span>
+                      <span className="text-xl">Payment Gateway</span>
                       <span className="font-medium text-purple-600">
-                      0
+                        {dashboardData.configuredGateways}
                       </span>
                     </div>
                     <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <span className="text-xl">Content status</span>
+                      <span className="text-xl">Content Status</span>
                       <span className="font-medium text-pink-600">
-                       Updated
+                        Updated
                       </span>
                     </div>
                   </div>
@@ -379,25 +379,25 @@ useEffect(() => {
                     <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <span className="text-xl">Active Desserts</span>
                       <span className="font-medium text-blue-600">
-                        3
+                        {contentStatsLoading ? '...' : dashboardData.activeDesserts}
                       </span>
                     </div>
                     <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <span className="text-xl">Featured Items</span>
                       <span className="font-medium text-green-600">
-                       2
+                        {contentStatsLoading ? '...' : dashboardData.featuredDesserts}
                       </span>
                     </div>
                     <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <span className="text-xl  ">Serving Ideas</span>
+                      <span className="text-xl">Serving Ideas</span>
                       <span className="font-medium text-purple-600">
-                  5
+                        {contentStatsLoading ? '...' : dashboardData.servingIdeas}
                       </span>
                     </div>
                     <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <span className="text-xl">Testimonials</span>
                       <span className="font-medium text-pink-600">
-                       20
+                        {dashboardLoading ? '...' : dashboardData.totalTestimonials}
                       </span>
                     </div>
                   </div>
@@ -416,10 +416,10 @@ useEffect(() => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground text-lg mb-4">
-                   Add, edit, and manage your dessert catalog with pricing, images, and descriptions
+                    Add, edit, and manage your dessert catalog with pricing, images, and descriptions
                   </p>
                   <Button className="w-full" onClick={() => handleSectionChange('desserts')}>
-                      <Package className="h-5 w-5" />  Manage Desserts
+                    <Package className="h-5 w-5" />  Manage Desserts
                   </Button>
                 </CardContent>
               </Card>
@@ -436,8 +436,8 @@ useEffect(() => {
                     View and manage customer orders, update statuses, and track deliveries.
                   </p>
                   <Button className="w-full" onClick={() => handleSectionChange('orders')}>
-                                     <ShoppingBag className="h-5 w-5" />
-   View Orders
+                    <ShoppingBag className="h-5 w-5" />
+                    View Orders
                   </Button>
                 </CardContent>
               </Card>
@@ -454,8 +454,8 @@ useEffect(() => {
                     Manage customer testimonials and reviews to build trust and credibility.
                   </p>
                   <Button className="w-full" onClick={() => handleSectionChange('testimonials')}>
-                                      <Quote className="h-5 w-5" />
-  Manage Testimonials
+                    <Quote className="h-5 w-5" />
+                    Manage Testimonials
                   </Button>
                 </CardContent>
               </Card>
@@ -472,8 +472,8 @@ useEffect(() => {
                     Configure payment gateways for online transactions.
                   </p>
                   <Button className="w-full" onClick={() => handleSectionChange('payments')}>
-                                     <CreditCard className="h-5 w-5" />
-   Setup Payments
+                    <CreditCard className="h-5 w-5" />
+                    Setup Payments
                   </Button>
                 </CardContent>
               </Card>
@@ -490,8 +490,8 @@ useEffect(() => {
                     Customize your homepage hero section with images, titles, and CTAs.
                   </p>
                   <Button className="w-full" onClick={() => handleSectionChange('hero')}>
-                                 <Edit className="h-5 w-5" />
-       Edit Hero
+                    <Edit className="h-5 w-5" />
+                    Edit Hero
                   </Button>
                 </CardContent>
               </Card>
@@ -500,7 +500,7 @@ useEffect(() => {
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <Settings className="h-5 w-5" />
-                       Site Settings
+                    Site Settings
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -513,7 +513,8 @@ useEffect(() => {
                   </Button>
                 </CardContent>
               </Card>
-                  <Card>
+
+              <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <Users className="h-5 w-5" />
@@ -522,47 +523,32 @@ useEffect(() => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground text-lg mb-4">
-Edit Chef Bano's story, certifications, and about page content and detail.                </p>
+                    Edit Chef Bano's story, certifications, and about page content and detail.
+                  </p>
                   <Button className="w-full" onClick={() => handleSectionChange('about')}>
-                                     <Users className="h-5 w-5" />
-   Edit About
+                    <Users className="h-5 w-5" />
+                    Edit About
                   </Button>
                 </CardContent>
               </Card>
 
-                 <Card>
+              <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <FileText className="h-5 w-5" />
-                   Serving Ideas
+                    Serving Ideas
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground text-lg mb-4">
-Manage occasion-based serving suggestions and celebration ideas.              </p>
+                    Manage occasion-based serving suggestions and celebration ideas.
+                  </p>
                   <Button className="w-full" onClick={() => handleSectionChange('serving-ideas')}>
-                                  <FileText className="h-5 w-5" />
-      Manage Ideas
+                    <FileText className="h-5 w-5" />
+                    Manage Ideas
                   </Button>
                 </CardContent>
               </Card>
-            
-              {/* <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <FileText className="h-5 w-5" />
-                   Privacy Policy
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground text-lg mb-4">
-Manage your website's privacy policy content and settings.              </p>
-                  <Button className="w-full" onClick={() => handleSectionChange('privacy-policy')}>
-                                  <FileText className="h-5 w-5" />
-      Manage Privacy Policy
-                  </Button>
-                </CardContent>
-              </Card> */}
             </div>
           </div>
         );
@@ -578,8 +564,8 @@ Manage your website's privacy policy content and settings.              </p>
     { id: 'about', label: 'About Section', icon: Users },
     { id: 'serving-ideas', label: 'Serving Ideas', icon: FileText },
     { id: 'payments', label: 'Payments Settings', icon: CreditCard },
-    { id: 'settings', label: ' Site Settings', icon: Settings },
-    { id: 'inquiries', label: 'Inquiries', icon: Bell, },
+    { id: 'settings', label: 'Site Settings', icon: Settings },
+    { id: 'inquiries', label: 'Inquiries', icon: Bell },
     { id: 'privacy-policy', label: 'Privacy Policy', icon: FileText },
     { id: 'terms-of-service', label: 'Terms of Service', icon: FileText },
     { id: 'refund-policy', label: 'Refund Policy', icon: FileText },
@@ -598,15 +584,13 @@ Manage your website's privacy policy content and settings.              </p>
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex ">
+    <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
-      <div    ref={sidebarRef} className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <div ref={sidebarRef} className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between p-4 border-b">
             <div className="flex items-center space-x-2">
-             
               <div>
-               
                 <p className="text-xl font-bold text-gray-500">Admin Panel</p>
               </div>
             </div>
@@ -645,62 +629,57 @@ Manage your website's privacy policy content and settings.              </p>
           </div>
 
           <div className="p-4 border-t">
-       <button
-  onClick={() => {
-    localStorage.removeItem("token");
-      localStorage.removeItem("user");
-    navigate("/login");
-  }}
-  className="w-full flex items-center px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100"
->
-  <LogOut className="h-5 w-5 mr-3" />
-  <span>Logout</span>
-</button>
-
+            <button
+              onClick={() => {
+                localStorage.removeItem("token");
+                localStorage.removeItem("user");
+                navigate("/login");
+              }}
+              className="w-full flex items-center px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100"
+            >
+              <LogOut className="h-5 w-5 mr-3" />
+              <span>Logout</span>
+            </button>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 lg:ml-0  ">
+      <div className="flex-1 lg:ml-0">
         <div className="sticky top-0 z-20 lg:relative bg-white shadow-sm lg:shadow-none border-b lg:border-none">
-          <div className="flex items-center justify-between p-4 ">
+          <div className="flex items-center justify-between p-4">
             <div className="flex items-center">
-              <button   ref={buttonRef}
+              <button ref={buttonRef}
                 onClick={() => setMobileMenuOpen(true)}
                 className="lg:hidden p-2 rounded-lg hover:bg-gray-100 mr-2"
               >
-                <Menu className="h-5 w-5 " />
+                <Menu className="h-5 w-5" />
               </button>
-              <div className="space-y-1 !z-999 " >
+              <div className="space-y-1 !z-999">
                 <h1 className="text-xl font-bold">{getSectionTitle()}</h1>
                 <p className="text-sm text-gray-500">{getSectionDescription()}</p>
               </div>
             </div>
             
             <div className="flex items-center space-x-4">
-          
-              
-       
-              
               <div className="hidden md:flex items-center space-x-2">
-               <div className="relative">
-      {/* Profile icon */}
-      <div
-        onClick={() => setOpen(!open)}
-        className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white cursor-pointer"
-      >
-        <User size={18} />
-      </div>
+                <div className="relative">
+                  {/* Profile icon */}
+                  <div
+                    onClick={() => setOpen(!open)}
+                    className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white cursor-pointer"
+                  >
+                    <User size={18} />
+                  </div>
 
-      {/* Dropdown */}
-      {open && (
-        <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-md border p-3 text-sm">
-          <p className="font-medium">Admin</p>
-          <p className="text-gray-500">admin@gmail.com</p>
-        </div>
-      )}
-    </div>
+                  {/* Dropdown */}
+                  {open && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-md border p-3 text-sm">
+                      <p className="font-medium">Admin</p>
+                      <p className="text-gray-500">admin@gmail.com</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>

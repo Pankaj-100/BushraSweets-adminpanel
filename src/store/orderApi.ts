@@ -10,7 +10,7 @@ export const orderApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ["Orders", "PrivacyPolicy", "TermsOfService", "RefundPolicy", "FoodSafety"],
+  tagTypes: ["Orders", "PrivacyPolicy", "TermsOfService", "RefundPolicy", "FoodSafety", "Dashboard", "PaymentConfig"],
   endpoints: (builder) => ({
     // =================== ORDERS ENDPOINTS ===================
     
@@ -53,6 +53,41 @@ export const orderApi = createApi({
     getOrdersCount: builder.query<any, void>({
       query: () => `/orders/getOrdersCount`,
       providesTags: ["Orders"],
+    }),
+
+    // =================== DASHBOARD ENDPOINTS ===================
+
+    // GET DASHBOARD COUNTS
+    getDashboardCounts: builder.query<any, void>({
+      query: () => `/dashboard/getDashboardCounts`,
+      providesTags: ["Dashboard"],
+    }),
+
+    // GET CONTENT STATS
+    getContentStats: builder.query<any, void>({
+      query: () => `/dashboard/getContentStats`,
+      providesTags: ["Dashboard"],
+    }),
+
+    // =================== PAYMENT CONFIG ENDPOINTS ===================
+
+    // GET PAYMENT CONFIG
+    getPaymentConfig: builder.query<any, void>({
+      query: () => `/payments/getPaymentConfig`,
+      providesTags: ["PaymentConfig"],
+    }),
+
+    // UPDATE PAYMENT CONFIG
+    updatePaymentConfig: builder.mutation<
+      any,
+      { ssl_account_id: string; ssl_user_id: string; ssl_pin: string }
+    >({
+      query: (body) => ({
+        url: `/payments/updatePaymentConfig`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["PaymentConfig"],
     }),
 
     // =================== PRIVACY POLICY ENDPOINTS ===================
@@ -158,6 +193,13 @@ export const {
   useGetOrderByIdQuery,
   useUpdateOrderStatusMutation,
   useGetOrdersCountQuery,
+  // Dashboard hooks
+  useGetDashboardCountsQuery,
+  useGetContentStatsQuery,
+  // Payment config hooks
+  useGetPaymentConfigQuery,
+  useUpdatePaymentConfigMutation,
+  // Policy hooks
   useGetPrivacyPolicyQuery,
   useUpdatePrivacyPolicyMutation,
   useGetTermsOfServiceQuery,

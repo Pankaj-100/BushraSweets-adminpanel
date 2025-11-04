@@ -6,8 +6,12 @@ import { Label } from '../ui/label';
 import { Badge } from '../ui/badge';
 import { Switch } from '../ui/switch';
 import { motion } from 'motion/react';
-import { CreditCard, Key, Eye, EyeOff, AlertTriangle, CheckCircle } from 'lucide-react';
+import { CreditCard, Eye, EyeOff, AlertTriangle, CheckCircle, Save } from 'lucide-react';
 import { toast } from 'sonner';
+import { 
+  useGetPaymentConfigQuery, 
+  useUpdatePaymentConfigMutation 
+} from '../../store/orderApi';
 
 interface PaymentGateway {
   id: string;
@@ -23,46 +27,71 @@ export function AdminPaymentSettings() {
   const [gateways, setGateways] = useState<PaymentGateway[]>([]);
   const [showCredentials, setShowCredentials] = useState<{ [key: string]: boolean }>({});
 
+  // API hooks
+  const { data: paymentConfig, isLoading, refetch } = useGetPaymentConfigQuery();
+  const [updatePaymentConfig, { isLoading: isUpdating }] = useUpdatePaymentConfigMutation();
+
   useEffect(() => {
     loadPaymentSettings();
-  }, []);
+  }, [paymentConfig]);
 
   const loadPaymentSettings = () => {
     try {
-      const saved = localStorage.getItem('payment-gateways');
-      if (saved) {
-        setGateways(JSON.parse(saved));
-      } else {
-        // Initialize with only Elavon
-        const defaultGateways: PaymentGateway[] = [
-          {
-            id: 'elavon',
-            name: 'Elavon',
-            enabled: true,
-            testMode: false,
-            credentials: {
-              merchantId: '',
-              apiKey: '',
-              terminalId: ''
-            }
+      if (paymentConfig?.config) {
+        // Use API data
+        const apiGateway: PaymentGateway = {
+          id: 'elavon',
+          name: 'Elavon',
+          enabled: true,
+          testMode: false,
+          credentials: {
+            ssl_account_id: paymentConfig.config.ssl_account_id || '',
+            ssl_user_id: paymentConfig.config.ssl_user_id || '',
+            ssl_pin: paymentConfig.config.ssl_pin || ''
           }
-        ];
-        setGateways(defaultGateways);
-        localStorage.setItem('payment-gateways', JSON.stringify(defaultGateways));
+        };
+        setGateways([apiGateway]);
+      } else {
+        // Initialize with empty gateway if no API data
+        const defaultGateway: PaymentGateway = {
+          id: 'elavon',
+          name: 'Elavon',
+          enabled: true,
+          testMode: false,
+          credentials: {
+            ssl_account_id: '',
+            ssl_user_id: '',
+            ssl_pin: ''
+          }
+        };
+        setGateways([defaultGateway]);
       }
     } catch (error) {
       console.error('Error loading payment settings:', error);
+      toast.error('Failed to load payment configuration');
     }
   };
 
-  const savePaymentSettings = (updatedGateways: PaymentGateway[]) => {
+  const savePaymentSettings = async (updatedGateways: PaymentGateway[]) => {
     try {
       setGateways(updatedGateways);
-      localStorage.setItem('payment-gateways', JSON.stringify(updatedGateways));
-      toast.success('Payment settings saved successfully');
-    } catch (error) {
+      
+      // Save to API only
+      const gateway = updatedGateways[0]; // Only one gateway (Elavon)
+      if (gateway) {
+        const configData = {
+          ssl_account_id: gateway.credentials.ssl_account_id,
+          ssl_user_id: gateway.credentials.ssl_user_id,
+          ssl_pin: gateway.credentials.ssl_pin
+        };
+
+        await updatePaymentConfig(configData).unwrap();
+        toast.success('Payment configuration saved successfully');
+        refetch(); // Refresh the config data
+      }
+    } catch (error: any) {
       console.error('Error saving payment settings:', error);
-      toast.error('Failed to save payment settings');
+      toast.error(error?.data?.message || 'Failed to save payment configuration');
     }
   };
 
@@ -102,9 +131,9 @@ export function AdminPaymentSettings() {
 
   const getCredentialFields = () => {
     return [
-      { key: 'merchantId', label: 'Merchant ID', placeholder: '123456789' },
-      { key: 'apiKey', label: 'API Key', placeholder: 'api_key_...', sensitive: true },
-      { key: 'terminalId', label: 'Terminal ID', placeholder: 'terminal_...', sensitive: true }
+      { key: 'ssl_account_id', label: 'SSL Account ID', placeholder: '21505' },
+      { key: 'ssl_user_id', label: 'SSL User ID', placeholder: 'apiuser', sensitive: true },
+      { key: 'ssl_pin', label: 'SSL PIN', placeholder: 'BNNFA921E7E70P8KD1CWD...', sensitive: true }
     ];
   };
 
@@ -113,37 +142,43 @@ export function AdminPaymentSettings() {
     return requiredFields.every(field => gateway.credentials[field.key]?.trim());
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-2 text-muted-foreground">Loading payment configuration...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      {/* <div>
-        <h2 className="text-2xl font-bold mb-2">Payment Gateway Settings</h2>
-        <p className="text-muted-foreground">
-          Configure Elavon payment gateway to accept online payments. Ensure all credentials are kept secure.
-        </p>
-      </div> */}
+  
 
-      {/* Security Notice */}
-      {/* <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <Card className="border-orange-200 bg-orange-50">
-          <CardContent className="p-4">
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="h-5 w-5 text-orange-600 mt-0.5 flex-shrink-0" />
-              <div>
-                <h4 className="font-semibold text-orange-800 mb-1">Security Notice</h4>
-                <p className="text-sm text-orange-700">
-                  Payment gateway credentials are sensitive information. Store them securely and never share them. 
-                  Always use test credentials during development and switch to live credentials only when ready for production.
-                </p>
+      {/* API Status */}
+      {paymentConfig?.config && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <Card className="border-green-200 bg-green-50">
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <h4 className="font-semibold text-green-800 mb-1">Configuration Synced</h4>
+                  <p className="text-sm text-green-700">
+                    Your payment configuration is securely stored on the server and will be used for all transactions.
+                  </p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div> */}
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
       {/* Payment Gateways */}
       <div className="grid grid-cols-1 gap-6">
@@ -205,7 +240,7 @@ export function AdminPaymentSettings() {
 
                   {/* Credentials */}
                   <div className="space-y-4">
-                    <Label className="text-md font-medium">API Credentials</Label>
+                    <Label className="text-md font-medium">SSL Credentials</Label>
                     {getCredentialFields().map((field) => {
                       const credentialKey = `${gateway.id}-${field.key}`;
                       const isVisible = showCredentials[credentialKey];
@@ -247,9 +282,19 @@ export function AdminPaymentSettings() {
                       onClick={() => saveCredentials(gateway.id)}
                       size="sm"
                       className="w-full text-lg"
+                      disabled={isUpdating}
                     >
-                      <Key className="h-4 w-4 mr-2" />
-                      Save Credentials
+                      {isUpdating ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="h-4 w-4 mr-2" />
+                          Save Configuration
+                        </>
+                      )}
                     </Button>
                   </div>
 
@@ -265,6 +310,12 @@ export function AdminPaymentSettings() {
                       <span>Environment:</span>
                       <Badge variant={gateway.testMode ? 'outline' : 'default'}>
                         {gateway.testMode ? 'Test' : 'Production'}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between text-lg mt-1">
+                      <span>Storage:</span>
+                      <Badge variant="default">
+                        Server
                       </Badge>
                     </div>
                   </div>
