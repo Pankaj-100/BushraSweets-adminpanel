@@ -16,6 +16,10 @@ import { AdminOrdersManager } from './components/admin/AdminOrdersManager';
 import { AdminSiteSettings } from './components/admin/AdminSiteSettings';
 import { AdminTestimonialsManager } from './components/admin/AdminTestimonialsManager';
 import { AdminPaymentSettings } from './components/admin/AdminPaymentSettings';
+import { AdminPrivacyPolicyManager } from './components/admin/AdminPrivacyPolicy';
+import { AdminTermsOfServiceManager } from './components/admin/AdminTermsOfServiceManager';
+import { AdminRefundPolicyManager } from './components/admin/AdminRefundPolicyManager';
+import { AdminFoodSafetyManager } from './components/admin/AdminFoodSafetyManager';
 
 // Import UI components
 import { Button } from './components/ui/button';
@@ -25,7 +29,7 @@ import { Input } from './components/ui/input';
 import { useContent } from './components/ContentContext';
 import { AdminInquiries } from './components/admin/AdminInquiry';
 
-type AdminSectionType = 'dashboard' | 'desserts' | 'hero' | 'about' | 'serving-ideas' | 'testimonials' | 'orders' | 'settings' | 'payments' | 'inquiries';
+type AdminSectionType = 'dashboard' | 'desserts' | 'hero' | 'about' | 'serving-ideas' | 'testimonials' | 'orders' | 'settings' | 'payments' | 'inquiries' | 'privacy-policy' | 'terms-of-service' | 'refund-policy' | 'food-safety';
 
 interface AdminDashboardProps {
   onLogout?: () => void;
@@ -48,6 +52,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     if (path.includes('/admin/settings')) return 'settings';
     if (path.includes('/admin/payments')) return 'payments';
     if (path.includes('/admin/inquiries')) return 'inquiries';
+    if (path.includes('/admin/privacy-policy')) return 'privacy-policy';
+    if (path.includes('/admin/terms-of-service')) return 'terms-of-service';
+    if (path.includes('/admin/refund-policy')) return 'refund-policy';
+    if (path.includes('/admin/food-safety')) return 'food-safety';
     return 'dashboard';
   };
 
@@ -151,7 +159,11 @@ useEffect(() => {
       'settings': 'Site Settings',
       'payments': 'Payment Settings',
       'dashboard': 'Dashboard Overview',
-      'inquiries': 'Customer Inquiries'
+      'inquiries': 'Customer Inquiries',
+      'privacy-policy': 'Privacy Policy',
+      'terms-of-service': 'Terms of Service',
+      'refund-policy': 'Refund Policy',
+      'food-safety': 'Food Safety Guidelines'
     };
     return titles[currentSection] || 'Admin Dashboard';
   };
@@ -168,6 +180,10 @@ useEffect(() => {
       'payments': 'Configure payment gateways for online transactions',
       'dashboard': '',
       'inquiries': 'Manage customer inquiries ',
+      'privacy-policy': 'Manage and update your website\'s privacy policy content',
+      'terms-of-service': 'Manage and update your website\'s terms of service content',
+      'refund-policy': 'Manage and update your website\'s refund policy content ',
+      'food-safety': 'Manage and update your food safety guidelines content'
     };
     return descriptions[currentSection] || ' ';
   };
@@ -192,6 +208,14 @@ useEffect(() => {
         return <AdminPaymentSettings />;
       case 'inquiries':
         return <AdminInquiries/>
+      case 'privacy-policy':
+        return <AdminPrivacyPolicyManager />;
+      case 'terms-of-service':
+        return <AdminTermsOfServiceManager />;
+      case 'refund-policy':
+        return <AdminRefundPolicyManager />;
+      case 'food-safety':
+        return <AdminFoodSafetyManager />;  
       case 'dashboard':
       default:
         return (
@@ -522,6 +546,23 @@ Manage occasion-based serving suggestions and celebration ideas.              </
                   </Button>
                 </CardContent>
               </Card>
+            
+              {/* <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <FileText className="h-5 w-5" />
+                   Privacy Policy
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground text-lg mb-4">
+Manage your website's privacy policy content and settings.              </p>
+                  <Button className="w-full" onClick={() => handleSectionChange('privacy-policy')}>
+                                  <FileText className="h-5 w-5" />
+      Manage Privacy Policy
+                  </Button>
+                </CardContent>
+              </Card> */}
             </div>
           </div>
         );
@@ -539,6 +580,10 @@ Manage occasion-based serving suggestions and celebration ideas.              </
     { id: 'payments', label: 'Payments Settings', icon: CreditCard },
     { id: 'settings', label: ' Site Settings', icon: Settings },
     { id: 'inquiries', label: 'Inquiries', icon: Bell, },
+    { id: 'privacy-policy', label: 'Privacy Policy', icon: FileText },
+    { id: 'terms-of-service', label: 'Terms of Service', icon: FileText },
+    { id: 'refund-policy', label: 'Refund Policy', icon: FileText },
+    { id: 'food-safety', label: 'Food Safety Guidelines', icon: FileText },
   ];
 
   if (isLoading || !content) {

@@ -42,6 +42,10 @@ export default function App() {
                         <Route path="/settings" element={<AdminRouterWrapper />} />
                         <Route path="/payments" element={<AdminRouterWrapper />} />
                         <Route path="/inquiries" element={<AdminRouterWrapper />} />
+                        <Route path="/privacy-policy" element={<AdminRouterWrapper />} />
+                        <Route path="/food-safety" element={<AdminRouterWrapper />} />
+                        <Route path="/terms-of-service" element={<AdminRouterWrapper />} />
+                        <Route path="/refund-policy" element={<AdminRouterWrapper />} />
                       </Routes>
                     </Layout>
                   </ProtectedRoute>
