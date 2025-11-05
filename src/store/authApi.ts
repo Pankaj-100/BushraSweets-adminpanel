@@ -1,29 +1,23 @@
 // src/store/authApi.ts
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { baseQueryWithReauth } from "./apiConfig";
 
 export const authApi = createApi({
   reducerPath: "authApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: "https://bushra-sweets-backend.onrender.com/api/v1/users",
-    prepareHeaders: (headers) => {
-      const token = localStorage.getItem("token");
-      if (token) {
-        headers.set("Authorization", `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
+  baseQuery: baseQueryWithReauth,
   endpoints: (builder) => ({
     login: builder.mutation<
       { success: boolean; message: string; token: string; user: any },
       { email: string; password: string }
     >({
       query: (body) => ({
-        url: "/login",
+        url: "/users/login",
         method: "POST",
         body,
       }),
     }),
+  
+  
   }),
 });
 

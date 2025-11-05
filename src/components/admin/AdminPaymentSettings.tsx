@@ -216,7 +216,7 @@ export function AdminPaymentSettings() {
                     )}
                     <Switch
                       checked={gateway.enabled}
-                      onCheckedChange={(enabled) => updateGateway(gateway.id, { enabled })}
+                      onCheckedChange={(enabled: boolean) => updateGateway(gateway.id, { enabled })}
                     />
                   </div>
                 </div>
@@ -234,7 +234,7 @@ export function AdminPaymentSettings() {
                     </div>
                     <Switch
                       checked={gateway.testMode}
-                      onCheckedChange={(testMode) => updateGateway(gateway.id, { testMode })}
+                      onCheckedChange={(testMode:any) => updateGateway(gateway.id, { testMode })}
                     />
                   </div>
 

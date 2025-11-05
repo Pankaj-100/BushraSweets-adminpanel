@@ -1,20 +1,13 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+// src/store/orderApi.ts
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { baseQueryWithReauth } from "./apiConfig";
 
 export const orderApi = createApi({
   reducerPath: "orderApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: "https://bushra-sweets-backend.onrender.com/api/v1",
-    prepareHeaders: (headers) => {
-      const token = localStorage.getItem("token");
-      if (token) headers.set("Authorization", `Bearer ${token}`);
-      return headers;
-    },
-  }),
+  baseQuery: baseQueryWithReauth,
   tagTypes: ["Orders", "PrivacyPolicy", "TermsOfService", "RefundPolicy", "FoodSafety", "Dashboard", "PaymentConfig"],
   endpoints: (builder) => ({
     // =================== ORDERS ENDPOINTS ===================
-    
-    // GET ALL ORDERS
     getAllOrders: builder.query<
       any,
       { page?: number; limit?: number; status?: string }
@@ -25,18 +18,18 @@ export const orderApi = createApi({
           limit: limit.toString(),
         });
         if (status) params.append("status", status);
-        return `/orders/getAllOrders?${params.toString()}`;
+        return {
+          url: `/orders/getAllOrders?${params.toString()}`,
+        };
       },
       providesTags: ["Orders"],
     }),
 
-    // GET ORDER BY ID
     getOrderById: builder.query<any, string>({
       query: (orderId) => `/orders/getOrder/${orderId}`,
       providesTags: ["Orders"],
     }),
 
-    // UPDATE ORDER STATUS
     updateOrderStatus: builder.mutation<
       any,
       { orderId: string; status: string }
@@ -49,35 +42,28 @@ export const orderApi = createApi({
       invalidatesTags: ["Orders"],
     }),
 
-    // GET ORDERS COUNT
     getOrdersCount: builder.query<any, void>({
       query: () => `/orders/getOrdersCount`,
       providesTags: ["Orders"],
     }),
 
     // =================== DASHBOARD ENDPOINTS ===================
-
-    // GET DASHBOARD COUNTS
     getDashboardCounts: builder.query<any, void>({
       query: () => `/dashboard/getDashboardCounts`,
       providesTags: ["Dashboard"],
     }),
 
-    // GET CONTENT STATS
     getContentStats: builder.query<any, void>({
       query: () => `/dashboard/getContentStats`,
       providesTags: ["Dashboard"],
     }),
 
     // =================== PAYMENT CONFIG ENDPOINTS ===================
-
-    // GET PAYMENT CONFIG
     getPaymentConfig: builder.query<any, void>({
       query: () => `/payments/getPaymentConfig`,
       providesTags: ["PaymentConfig"],
     }),
 
-    // UPDATE PAYMENT CONFIG
     updatePaymentConfig: builder.mutation<
       any,
       { ssl_account_id: string; ssl_user_id: string; ssl_pin: string }
@@ -91,14 +77,11 @@ export const orderApi = createApi({
     }),
 
     // =================== PRIVACY POLICY ENDPOINTS ===================
-
-    // GET PRIVACY POLICY BY TYPE
     getPrivacyPolicy: builder.query<any, void>({
       query: () => `/policies/getPolicyByType/privacy`,
       providesTags: ["PrivacyPolicy"],
     }),
 
-    // CREATE OR UPDATE PRIVACY POLICY
     updatePrivacyPolicy: builder.mutation<
       any,
       { content: string }
@@ -115,14 +98,11 @@ export const orderApi = createApi({
     }),
 
     // =================== TERMS OF SERVICE ENDPOINTS ===================
-
-    // GET TERMS OF SERVICE BY TYPE
     getTermsOfService: builder.query<any, void>({
       query: () => `/policies/getPolicyByType/service`,
       providesTags: ["TermsOfService"],
     }),
 
-    // CREATE OR UPDATE TERMS OF SERVICE
     updateTermsOfService: builder.mutation<
       any,
       { content: string }
@@ -139,14 +119,11 @@ export const orderApi = createApi({
     }),
 
     // =================== REFUND POLICY ENDPOINTS ===================
-
-    // GET REFUND POLICY BY TYPE
     getRefundPolicy: builder.query<any, void>({
       query: () => `/policies/getPolicyByType/refund`,
       providesTags: ["RefundPolicy"],
     }),
 
-    // CREATE OR UPDATE REFUND POLICY
     updateRefundPolicy: builder.mutation<
       any,
       { content: string }
@@ -163,14 +140,11 @@ export const orderApi = createApi({
     }),
 
     // =================== FOOD SAFETY ENDPOINTS ===================
-
-    // GET FOOD SAFETY BY TYPE
     getFoodSafety: builder.query<any, void>({
       query: () => `/policies/getPolicyByType/safety`,
       providesTags: ["FoodSafety"],
     }),
 
-    // CREATE OR UPDATE FOOD SAFETY
     updateFoodSafety: builder.mutation<
       any,
       { content: string }
@@ -193,13 +167,10 @@ export const {
   useGetOrderByIdQuery,
   useUpdateOrderStatusMutation,
   useGetOrdersCountQuery,
-  // Dashboard hooks
   useGetDashboardCountsQuery,
   useGetContentStatsQuery,
-  // Payment config hooks
   useGetPaymentConfigQuery,
   useUpdatePaymentConfigMutation,
-  // Policy hooks
   useGetPrivacyPolicyQuery,
   useUpdatePrivacyPolicyMutation,
   useGetTermsOfServiceQuery,

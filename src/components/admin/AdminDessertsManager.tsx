@@ -533,7 +533,7 @@ export function AdminDessertsManager() {
                       {dessert.dessertName}
                     </h3>
                     <span className="text-xl font-bold text-primary">
-                      ${dessert?.priceSingle.toFixed(2)}
+                      ${(dessert.priceSingle ?? 0).toFixed(2)}
                     </span>
                   </div>
                   <p className="text-lg text-muted-foreground mb-3 line-clamp-2">

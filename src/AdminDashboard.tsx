@@ -557,7 +557,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'orders', label: 'Orders Management', icon: ShoppingBag, badge: dashboardData.activeOrders },
+    { id: 'orders', label: 'Orders Management', icon: ShoppingBag },
     { id: 'desserts', label: 'Desserts Management', icon: Package },
     { id: 'testimonials', label: 'Testimonials', icon: Quote },
     { id: 'hero', label: 'Hero Section', icon: Edit },
