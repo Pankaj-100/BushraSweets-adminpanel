@@ -115,7 +115,7 @@ export function AdminTermsOfServiceManager() {
               {content ? 'Edit Policy' : 'Create Policy'}
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-6xl max-h-[90vh] w-full">
+          <DialogContent className="max-w-6xl w-full max-h-[90vh] flex flex-col">
             <DialogHeader>
               <DialogTitle className="text-lg">
                 {content ? 'Edit Terms of Service' : 'Create Terms of Service'}
@@ -128,27 +128,30 @@ export function AdminTermsOfServiceManager() {
               </DialogDescription>
             </DialogHeader>
             
-            <div className="space-y-4">
-              <div>
+            <div className="flex-1 flex flex-col min-h-0 space-y-4">
+              <div className="flex-1 flex flex-col min-h-0">
                 <Label htmlFor="terms-content" className="mb-2 text-lg block">
                   Terms of Service Content *
                 </Label>
-                <div className="border rounded-lg overflow-hidden">
+                <div className="border rounded-lg overflow-hidden flex-1 flex flex-col min-h-0">
                   <ReactQuill
                     value={content}
                     onChange={setContent}
                     modules={modules}
                     formats={formats}
                     theme="snow"
+                    className="flex-1 flex flex-col min-h-0"
                     style={{ 
-                      height: '400px',
-                      border: 'none'
+                      display: 'flex',
+                      flexDirection: 'column',
+                      height: 'auto',
+                      minHeight: '400px'
                     }}
                   />
                 </div>
               </div>
 
-              <div className="flex gap-2 pt-4">
+              <div className="flex gap-2 pt-4 flex-shrink-0">
                 <Button 
                   onClick={handleSave} 
                   className="flex-1 text-lg"
@@ -195,7 +198,7 @@ export function AdminTermsOfServiceManager() {
             ) : content ? (
               <div className="bg-muted/50 p-6 rounded-lg max-h-96 overflow-y-auto">
                 <div 
-                  className="prose prose-lg max-w-none"
+                  className="prose prose-lg max-w-none quill-content"
                   dangerouslySetInnerHTML={{ __html: content }}
                 />
               </div>

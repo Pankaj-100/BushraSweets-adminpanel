@@ -20,21 +20,36 @@ import { ImageUploadComponent } from './ImageUploadComponent';
 export function AdminTestimonialsManager() {
   const [isEditing, setIsEditing] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
-  const [editForm, setEditForm] = useState({
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(6); // Show 6 items per page for 3x2 grid
+
+  const editForm = useState({
     name: '',
     review: '',
     rating: 5,
     occasion: '',
     image: '',
-  });
+  })[0];
+  const setEditForm = useState({
+    name: '',
+    review: '',
+    rating: 5,
+    occasion: '',
+    image: '',
+  })[1];
 
-  // Added isLoading here 👇
-  const { data: testimonialsData, refetch, isLoading } = useGetTestimonialsQuery({ page: 1, limit: 20 });
+  // Updated to use pagination parameters
+  const { data: testimonialsData, refetch, isLoading } = useGetTestimonialsQuery({ 
+    page: currentPage, 
+    limit: itemsPerPage 
+  });
   const [addTestimonial] = useAddTestimonialMutation();
   const [editTestimonial] = useEditTestimonialMutation();
   const [deleteTestimonial] = useDeleteTestimonialMutation();
 
   const testimonials = testimonialsData?.testimonials || [];
+  const totalPages = testimonialsData?.pagination?.totalPages || 1;
+  const totalItems = testimonialsData?.pagination?.totalItems || 0;
 
   const handleEdit = (testimonial: any) => {
     setIsEditing(testimonial.id);
@@ -114,6 +129,11 @@ export function AdminTestimonialsManager() {
     setEditForm({ name: '', review: '', rating: 5, occasion: '', image: '' });
   };
 
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const renderStars = (rating: number, interactive = false, onChange?: (rating: number) => void) => (
     <div className="flex items-center gap-1">
       {[1, 2, 3, 4, 5].map((star) => (
@@ -128,11 +148,47 @@ export function AdminTestimonialsManager() {
     </div>
   );
 
+  // Simple pagination like in your reference
+  const renderPagination = () => {
+    if (totalPages <= 1) return null;
+
+    return (
+      <div className="flex justify-center items-center gap-2 mt-6 flex-wrap">
+        <Button
+          onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
+          disabled={currentPage === 1}
+          className="px-3"
+        >
+          Prev
+        </Button>
+
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
+          <Button
+            key={num}
+            onClick={() => handlePageChange(num)}
+            variant={num === currentPage ? "default" : "outline"}
+            className="px-3"
+          >
+            {num}
+          </Button>
+        ))}
+
+        <Button
+          onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
+          disabled={currentPage === totalPages}
+          className="px-3"
+        >
+          Next
+        </Button>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-end">
-     
+    
         <Button onClick={() => setIsAdding(true)} disabled={isAdding || isEditing !== null}>
           <Plus className="h-4 w-4 mr-2" />
           Add Testimonial
@@ -189,8 +245,6 @@ export function AdminTestimonialsManager() {
                   onChange={(url) => setEditForm((prev) => ({ ...prev, image: url }))}
                   label="Customer Image"
                   placeholder="Enter image URL or upload"
-                  
-                
                 />
 
                 <div>
@@ -210,10 +264,10 @@ export function AdminTestimonialsManager() {
                 </div>
 
                 <div className="flex gap-2">
-                  <Button  className ="text-lg" onClick={handleAdd}>
+                  <Button className="text-lg" onClick={handleAdd}>
                     <Save className="h-4 w-4 mr-2" /> Add Testimonial
                   </Button>
-                  <Button className = "text-lg" variant="outline" onClick={handleCancel}>
+                  <Button className="text-lg" variant="outline" onClick={handleCancel}>
                     <X className="h-4 w-4 mr-2" /> Cancel
                   </Button>
                 </div>
@@ -225,135 +279,140 @@ export function AdminTestimonialsManager() {
 
       {/* Testimonials List */}
       {!isLoading && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <AnimatePresence>
-            {testimonials.map((testimonial: any) => (
-              <motion.div
-                key={testimonial.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Card className="h-full ">
-                  <CardContent className="p-6">
-                    {isEditing === testimonial.id ? (
-                      <div className="space-y-4">
-                        {/* Edit form inside card */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <Label>Customer Name *</Label>
-                            <Input
-                              value={editForm.name}
-                              onChange={(e) => setEditForm((prev) => ({ ...prev, name: e.target.value }))}
-                            />
-                          </div>
-                          <div>
-                            <Label>Occasion</Label>
-                            <Input
-                              value={editForm.occasion}
-                              onChange={(e) => setEditForm((prev) => ({ ...prev, occasion: e.target.value }))}
-                            />
-                          </div>
-                        </div>
-
-                        <ImageUploadComponent
-                          value={editForm.image}
-                          onChange={(url) => setEditForm((prev) => ({ ...prev, image: url }))}
-                          label="Customer Image"
-                          placeholder="Enter image URL or upload"
-                        />
-
-                        <div>
-                          <Label>Rating</Label>
-                          {renderStars(editForm.rating, true, (rating) =>
-                            setEditForm((prev) => ({ ...prev, rating }))
-                          )}
-                        </div>
-                        <div>
-                          <Label>Review *</Label>
-                          <Textarea
-                            value={editForm.review}
-                            onChange={(e) => setEditForm((prev) => ({ ...prev, review: e.target.value }))}
-                            rows={4}
-                          />
-                        </div>
-                        <div className="flex gap-2">
-                          <Button onClick={handleSave} size="sm">
-                            <Save className="h-4 w-4 mr-2" /> Save
-                          </Button>
-                          <Button variant="outline" onClick={handleCancel} size="sm">
-                            <X className="h-4 w-4 mr-2" /> Cancel
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        <div className="flex items-start justify-between">
-                          <Quote className="h-6 w-6 text-primary/30 flex-shrink-0" />
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEdit(testimonial)}
-                              disabled={isEditing !== null || isAdding}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleDelete(testimonial.id)}
-                              disabled={isEditing !== null || isAdding}
-                              className="text-destructive hover:text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          {renderStars(testimonial.stars)}
-                          <span className="text-sm text-muted-foreground">({testimonial.stars}/5)</span>
-                        </div>
-
-                        <p className="text-muted-foreground  text-lg italic leading-relaxed">
-                          "{testimonial.review}"
-                        </p>
-
-                        <div className="flex items-center gap-4 pt-4 border-t">
-                          <div className="w-12 h-12 rounded-full overflow-hidden bg-muted flex-shrink-0">
-                            {testimonial.customerImage ? (
-                              <ImageWithFallback
-                                src={testimonial.customerImage}
-                                alt={testimonial.customerName}
-                                className="w-full h-full object-cover"
+        <>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <AnimatePresence>
+              {testimonials.map((testimonial: any) => (
+                <motion.div
+                  key={testimonial.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Card className="h-full">
+                    <CardContent className="p-6">
+                      {isEditing === testimonial.id ? (
+                        <div className="space-y-4">
+                          {/* Edit form inside card */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <Label>Customer Name *</Label>
+                              <Input
+                                value={editForm.name}
+                                onChange={(e) => setEditForm((prev) => ({ ...prev, name: e.target.value }))}
                               />
-                            ) : (
-                              <div className="w-full h-full bg-primary/10 flex items-center justify-center">
-                                <span className="text-primary text-lg font-semibold">
-                                  {testimonial.customerName.charAt(0)}
-                                </span>
-                              </div>
+                            </div>
+                            <div>
+                              <Label>Occasion</Label>
+                              <Input
+                                value={editForm.occasion}
+                                onChange={(e) => setEditForm((prev) => ({ ...prev, occasion: e.target.value }))}
+                              />
+                            </div>
+                          </div>
+
+                          <ImageUploadComponent
+                            value={editForm.image}
+                            onChange={(url) => setEditForm((prev) => ({ ...prev, image: url }))}
+                            label="Customer Image"
+                            placeholder="Enter image URL or upload"
+                          />
+
+                          <div>
+                            <Label>Rating</Label>
+                            {renderStars(editForm.rating, true, (rating) =>
+                              setEditForm((prev) => ({ ...prev, rating }))
                             )}
                           </div>
-                          <div className="flex-1">
-                            <h4 className="font-semibold text-xl">{testimonial.customerName}</h4>
-                            {testimonial.occasion && (
-                              <Badge variant="secondary" className="mt-1 text-xs">
-                                {testimonial.occasion}
-                              </Badge>
-                            )}
+                          <div>
+                            <Label>Review *</Label>
+                            <Textarea
+                              value={editForm.review}
+                              onChange={(e) => setEditForm((prev) => ({ ...prev, review: e.target.value }))}
+                              rows={4}
+                            />
+                          </div>
+                          <div className="flex gap-2">
+                            <Button onClick={handleSave} size="sm">
+                              <Save className="h-4 w-4 mr-2" /> Save
+                            </Button>
+                            <Button variant="outline" onClick={handleCancel} size="sm">
+                              <X className="h-4 w-4 mr-2" /> Cancel
+                            </Button>
                           </div>
                         </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          <div className="flex items-start justify-between">
+                            <Quote className="h-6 w-6 text-primary/30 flex-shrink-0" />
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEdit(testimonial)}
+                                disabled={isEditing !== null || isAdding}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDelete(testimonial.id)}
+                                disabled={isEditing !== null || isAdding}
+                                className="text-destructive hover:text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            {renderStars(testimonial.stars)}
+                            <span className="text-sm text-muted-foreground">({testimonial.stars}/5)</span>
+                          </div>
+
+                          <p className="text-muted-foreground text-lg italic leading-relaxed">
+                            "{testimonial.review}"
+                          </p>
+
+                          <div className="flex items-center gap-4 pt-4 border-t">
+                            <div className="w-12 h-12 rounded-full overflow-hidden bg-muted flex-shrink-0">
+                              {testimonial.customerImage ? (
+                                <ImageWithFallback
+                                  src={testimonial.customerImage}
+                                  alt={testimonial.customerName}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full bg-primary/10 flex items-center justify-center">
+                                  <span className="text-primary text-lg font-semibold">
+                                    {testimonial.customerName.charAt(0)}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="font-semibold text-xl">{testimonial.customerName}</h4>
+                              {testimonial.occasion && (
+                                <Badge variant="secondary" className="mt-1 text-xs">
+                                  {testimonial.occasion}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+
+          {/* Pagination */}
+          {renderPagination()}
+        </>
       )}
 
       {/* Empty state */}

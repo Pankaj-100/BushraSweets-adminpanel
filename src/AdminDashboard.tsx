@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Settings, Package, ShoppingBag, Users, User,FileText, Plus, Edit, 
+  Settings, Package, ShoppingBag, Users, User, FileText, Plus, Edit, 
   ArrowLeft, LayoutDashboard, Quote, CreditCard, BarChart3,
-  Calendar, TrendingUp, UserCheck, Bell, Search, LogOut, Menu, X
+  Calendar, TrendingUp, UserCheck, Bell, Search, LogOut, Menu, X,
+  Shield, FileCheck, Receipt, Heart
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -86,21 +87,25 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     { id: 3, message: 'New testimonial submitted', time: '3 hours ago', read: true }
   ]);
 
+  // Refs for click outside detection
+  const sidebarRef = useRef<HTMLDivElement>(null);
+  const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
+  const profileButtonRef = useRef<HTMLDivElement>(null);
+
   // Update current section when URL changes
   useEffect(() => {
     setCurrentSection(getCurrentSectionFromPath());
   }, [location.pathname]);
   
-  const sidebarRef = React.useRef<HTMLDivElement | null>(null);
-  const buttonRef = React.useRef<HTMLButtonElement | null>(null);
-
+  // Handle click outside for mobile menu
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         sidebarRef.current &&
         !sidebarRef.current.contains(event.target as Node) &&
-        buttonRef.current &&
-        !buttonRef.current.contains(event.target as Node)
+        mobileMenuButtonRef.current &&
+        !mobileMenuButtonRef.current.contains(event.target as Node)
       ) {
         setMobileMenuOpen(false);
       }
@@ -116,6 +121,30 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [mobileMenuOpen]);
+
+  // Handle click outside for profile dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        profileDropdownRef.current &&
+        !profileDropdownRef.current.contains(event.target as Node) &&
+        profileButtonRef.current &&
+        !profileButtonRef.current.contains(event.target as Node)
+      ) {
+        setOpen(false);
+      }
+    };
+
+    if (open) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [open]);
 
   // Update dashboard data when API responses are received
   useEffect(() => {
@@ -160,7 +189,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       'privacy-policy': 'Privacy Policy',
       'terms-of-service': 'Terms of Service',
       'refund-policy': 'Refund Policy',
-      'food-safety': 'Food Safety Guidelines'
+      'food-safety': 'Food Safety'
     };
     return titles[currentSection] || 'Admin Dashboard';
   };
@@ -555,6 +584,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     }
   };
 
+  // Menu items with unique icons
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'orders', label: 'Orders Management', icon: ShoppingBag },
@@ -566,10 +596,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     { id: 'payments', label: 'Payments Settings', icon: CreditCard },
     { id: 'settings', label: 'Site Settings', icon: Settings },
     { id: 'inquiries', label: 'Inquiries', icon: Bell },
-    { id: 'privacy-policy', label: 'Privacy Policy', icon: FileText },
-    { id: 'terms-of-service', label: 'Terms of Service', icon: FileText },
-    { id: 'refund-policy', label: 'Refund Policy', icon: FileText },
-    { id: 'food-safety', label: 'Food Safety Guidelines', icon: FileText },
+    { id: 'privacy-policy', label: 'Privacy Policy', icon: Shield },
+    { id: 'terms-of-service', label: 'Terms of Service', icon: FileCheck },
+    { id: 'refund-policy', label: 'Refund Policy', icon: Receipt },
+    { id: 'food-safety', label: 'Food Safety Guidelines', icon: Heart },
   ];
 
   if (isLoading || !content) {
@@ -649,13 +679,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
         <div className="sticky top-0 z-20 lg:relative bg-white shadow-sm lg:shadow-none border-b lg:border-none">
           <div className="flex items-center justify-between p-4">
             <div className="flex items-center">
-              <button ref={buttonRef}
+              <button 
+                ref={mobileMenuButtonRef}
                 onClick={() => setMobileMenuOpen(true)}
                 className="lg:hidden p-2 rounded-lg hover:bg-gray-100 mr-2"
               >
                 <Menu className="h-5 w-5" />
               </button>
-              <div className="space-y-1 !z-999">
+              <div className="space-y-1">
                 <h1 className="text-xl font-bold">{getSectionTitle()}</h1>
                 <p className="text-sm text-gray-500">{getSectionDescription()}</p>
               </div>
@@ -666,6 +697,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                 <div className="relative">
                   {/* Profile icon */}
                   <div
+                    ref={profileButtonRef}
                     onClick={() => setOpen(!open)}
                     className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white cursor-pointer"
                   >
@@ -674,7 +706,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
 
                   {/* Dropdown */}
                   {open && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-md border p-3 text-sm">
+                    <div 
+                      ref={profileDropdownRef}
+                      className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-md border p-3 text-sm z-50"
+                    >
                       <p className="font-medium">Admin</p>
                       <p className="text-gray-500">admin@gmail.com</p>
                     </div>

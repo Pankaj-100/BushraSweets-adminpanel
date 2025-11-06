@@ -64,6 +64,8 @@ interface AdminDessert {
   isActive?: boolean;
   rating?: number;
   reviewCount?: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 const initialDessertData: Omit<AdminDessert, "id"> = {
@@ -87,7 +89,13 @@ const initialDessertData: Omit<AdminDessert, "id"> = {
 };
 
 export function AdminDessertsManager() {
-  const { data, refetch, isLoading } = useGetDessertsQuery({ page: 1, limit: 20 });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(6);
+  
+  const { data, refetch, isLoading } = useGetDessertsQuery({ 
+    page: currentPage, 
+    limit: itemsPerPage 
+  });
   const [addDessert] = useAddDessertMutation();
   const [editDessert] = useEditDessertMutation();
   const [deleteDessert] = useDeleteDessertMutation();
@@ -108,7 +116,18 @@ export function AdminDessertsManager() {
     );
   }
 
-  const desserts: AdminDessert[] = data?.desserts || [];
+  // Sort desserts by creation date (latest first)
+  const desserts: AdminDessert[] = data?.desserts 
+    ? [...data.desserts].sort((a, b) => {
+        if (a.createdAt && b.createdAt) {
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        }
+        return 0;
+      })
+    : [];
+
+  const totalPages = data?.pagination?.totalPages || 1;
+  const totalItems = data?.pagination?.totalItems || 0;
 
   const handleSave = async () => {
     if (!formData.dessertName || !formData.description) {
@@ -195,14 +214,56 @@ export function AdminDessertsManager() {
     }));
   };
 
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Simple pagination like in your reference
+  const renderPagination = () => {
+    if (totalPages <= 1) return null;
+
+    return (
+      <div className="flex justify-center items-center gap-2 mt-6 flex-wrap">
+        <Button
+          onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
+          disabled={currentPage === 1}
+          className="px-3"
+        >
+          Prev
+        </Button>
+
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
+          <Button
+            key={num}
+            onClick={() => handlePageChange(num)}
+            variant={num === currentPage ? "default" : "outline"}
+            className="px-3"
+          >
+            {num}
+          </Button>
+        ))}
+
+        <Button
+          onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
+          disabled={currentPage === totalPages}
+          className="px-3"
+        >
+          Next
+        </Button>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6">
       <motion.div
-        className="flex items-center justify-between"
+        className="flex items-center justify-end"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
+    
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={() => resetForm()} className="text-lg font-semibold">
@@ -550,7 +611,6 @@ export function AdminDessertsManager() {
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
-                  
                     <div className="flex gap-2">
                       <Button
                         size="sm"
@@ -574,6 +634,9 @@ export function AdminDessertsManager() {
           ))}
         </AnimatePresence>
       </motion.div>
+
+      {/* Pagination - Now using the simple style from your reference */}
+      {renderPagination()}
 
       {desserts.length === 0 && (
         <Card className="p-12 text-center">

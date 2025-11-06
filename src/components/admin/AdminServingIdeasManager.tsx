@@ -36,7 +36,13 @@ const Loader = () => (
 );
 
 export function AdminServingIdeasManager() {
-  const { data, isLoading, refetch } = useGetServingIdeasQuery({ page: 1, limit: 50 });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(6); // Show 6 items per page for 3x2 grid
+
+  const { data, isLoading, refetch } = useGetServingIdeasQuery({ 
+    page: currentPage, 
+    limit: itemsPerPage 
+  });
   const [addServingIdea] = useAddServingIdeaMutation();
   const [editServingIdea] = useEditServingIdeaMutation();
   const [deleteServingIdea] = useDeleteServingIdeaMutation();
@@ -48,6 +54,10 @@ export function AdminServingIdeasManager() {
   useEffect(() => {
     if (!isDialogOpen) resetForm();
   }, [isDialogOpen]);
+
+  const servingIdeas = data?.servingIdeas || [];
+  const totalPages = data?.pagination?.totalPages || 1;
+  const totalItems = data?.pagination?.totalItems || 0;
 
   const handleSave = async () => {
     if (!formData.title || !formData.description) {
@@ -98,6 +108,11 @@ export function AdminServingIdeasManager() {
     setEditingIdea(null);
   };
 
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const getOccasionIcon = (occasion: string) => {
     const option = occasionOptions.find(opt => opt.value === occasion);
     return option?.icon || <Calendar className="h-4 w-4" />;
@@ -108,14 +123,52 @@ export function AdminServingIdeasManager() {
     return option?.color || 'bg-gray-100 text-gray-600';
   };
 
+  // Simple pagination like in your reference
+  const renderPagination = () => {
+    if (totalPages <= 1) return null;
+
+    return (
+      <div className="flex justify-center items-center gap-2 mt-6 flex-wrap">
+        <Button
+          onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
+          disabled={currentPage === 1}
+          className="px-3"
+        >
+          Prev
+        </Button>
+
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
+          <Button
+            key={num}
+            onClick={() => handlePageChange(num)}
+            variant={num === currentPage ? "default" : "outline"}
+            className="px-3"
+          >
+            {num}
+          </Button>
+        ))}
+
+        <Button
+          onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
+          disabled={currentPage === totalPages}
+          className="px-3"
+        >
+          Next
+        </Button>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <motion.div className="flex items-center justify-between" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-        {/* <div>
-          <h2 className="text-2xl font-bold mb-2">Serving Ideas Management</h2>
-          <p className="text-muted-foreground">Manage occasion-based serving suggestions and celebration ideas</p>
-        </div> */}
+      <motion.div 
+        className="flex items-center justify-end" 
+        initial={{ opacity: 0, y: 20 }} 
+        animate={{ opacity: 1, y: 0 }} 
+        transition={{ duration: 0.6 }}
+      >
+   
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={resetForm} className="text-lg">
@@ -123,7 +176,7 @@ export function AdminServingIdeasManager() {
               Add New Idea
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl t">
+          <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle className="text-lg">{editingIdea ? 'Edit Serving Idea' : 'Add New Serving Idea'}</DialogTitle>
               <DialogDescription className="text-lg">
@@ -133,15 +186,29 @@ export function AdminServingIdeasManager() {
             <div className="space-y-6">
               <div>
                 <Label htmlFor="title" className="mb-2 text-lg">Title *</Label>
-                <Input id="title" value={formData.title} onChange={e => setFormData(prev => ({ ...prev, title: e.target.value }))} placeholder="e.g., Eid Celebrations" />
+                <Input 
+                  id="title" 
+                  value={formData.title} 
+                  onChange={e => setFormData(prev => ({ ...prev, title: e.target.value }))} 
+                  placeholder="e.g., Eid Celebrations" 
+                />
               </div>
               <div>
                 <Label htmlFor="description" className="mb-2 text-lg">Description *</Label>
-                <Textarea id="description" value={formData.description} onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} placeholder="Describe how your desserts fit this occasion..." rows={3} />
+                <Textarea 
+                  id="description" 
+                  value={formData.description} 
+                  onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} 
+                  placeholder="Describe how your desserts fit this occasion..." 
+                  rows={3} 
+                />
               </div>
               <div>
                 <Label htmlFor="occasion" className="mb-2 text-lg">Occasion Type</Label>
-<Select value={formData.occasionType} onValueChange={(value: string) => setFormData(prev => ({ ...prev, occasionType: value }))}>
+                <Select 
+                  value={formData.occasionType} 
+                  onValueChange={(value: string) => setFormData(prev => ({ ...prev, occasionType: value }))}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -177,12 +244,17 @@ export function AdminServingIdeasManager() {
       </motion.div>
 
       {/* Serving Ideas List */}
-      <motion.div className="grid grid-cols-1 lg:grid-cols-3 gap-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.2 }}>
+      <motion.div 
+        className="grid grid-cols-1 lg:grid-cols-3 gap-6" 
+        initial={{ opacity: 0 }} 
+        animate={{ opacity: 1 }} 
+        transition={{ duration: 0.6, delay: 0.2 }}
+      >
         <AnimatePresence>
           {isLoading ? (
             <Loader />
-          ) : data?.servingIdeas.length === 0 ? (
-            <Card className="p-12 text-center">
+          ) : servingIdeas.length === 0 ? (
+            <Card className="p-12 text-center col-span-full">
               <Sparkles className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">No serving ideas found</h3>
               <p className="text-muted-foreground mb-4">Start by adding your first serving idea</p>
@@ -192,8 +264,14 @@ export function AdminServingIdeasManager() {
               </Button>
             </Card>
           ) : (
-            data.servingIdeas.map((idea: any, index: number) => (
-              <motion.div key={idea.id} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ duration: 0.3, delay: index * 0.1 }}>
+            servingIdeas.map((idea: any, index: number) => (
+              <motion.div 
+                key={idea.id} 
+                initial={{ opacity: 0, scale: 0.9 }} 
+                animate={{ opacity: 1, scale: 1 }} 
+                exit={{ opacity: 0, scale: 0.9 }} 
+                transition={{ duration: 0.3, delay: index * 0.1 }}
+              >
                 <Card className="overflow-hidden">
                   <div className="relative">
                     <ImageWithFallback src={idea.image} alt={idea.title} className="w-full h-48 object-cover" />
@@ -223,6 +301,9 @@ export function AdminServingIdeasManager() {
           )}
         </AnimatePresence>
       </motion.div>
+
+      {/* Pagination */}
+      {!isLoading && servingIdeas.length > 0 && renderPagination()}
     </div>
   );
 }

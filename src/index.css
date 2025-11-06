@@ -6374,3 +6374,16 @@ html {
     opacity: 0;
   }
 }
+.ql-container {
+  flex: 1;
+  overflow: auto;
+}
+
+.ql-editor {
+  min-height: 300px;
+}
+
+.quill-content {
+  max-height: 100%;
+  overflow-y: auto;
+}
