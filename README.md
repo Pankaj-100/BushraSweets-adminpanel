@@ -1,7 +1,7 @@
 
-  # South Asian Dessert Brand Website
+  # South Asian Dessert Brand Website Admin Panel
 
-  This is a code bundle for South Asian Dessert Brand Website. The original project is available at https://www.figma.com/design/pVTaNBSJWF6L7L0FHPBOTp/South-Asian-Dessert-Brand-Website.
+
 
   ## Running the code
 
