@@ -24,7 +24,8 @@ import {
   DollarSign,
   Search,
   Filter,
-  RefreshCw
+  RefreshCw,
+  X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
@@ -49,6 +50,7 @@ interface OrderItem {
 
 interface Order {
   id: string;
+  invoiceNumber: string;
   subTotal: number;
   deliveryCharge: number;
   total: number;
@@ -85,6 +87,7 @@ export function AdminOrdersManager() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -98,10 +101,11 @@ export function AdminOrdersManager() {
   } = useGetAllOrdersQuery({ 
     page: currentPage, 
     limit: pageSize, 
-    status: statusFilter !== 'all' ? statusFilter : '' 
+    status: statusFilter !== 'all' ? statusFilter : '',
+    search: debouncedSearchTerm // Use debounced search term
   });
+  
   const { data: ordersCount, isLoading: countLoading } = useGetOrdersCountQuery();
-
   const [updateOrderStatus] = useUpdateOrderStatusMutation();
 
   // Get detailed order when selected
@@ -119,6 +123,16 @@ export function AdminOrdersManager() {
       setSelectedOrder(detailedOrder.order);
     }
   }, [detailedOrder, selectedOrder]);
+
+  // Debounced search to avoid too many API calls
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+      setCurrentPage(1); // Reset to first page when searching
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm]);
 
   const handleUpdateOrderStatus = async (orderId: string, newStatus: Order['status']) => {
     try {
@@ -162,7 +176,7 @@ export function AdminOrdersManager() {
     // Use the counts from the ordersCount API if available
     if (ordersCount.counts) {
       return {
-        total: ordersCount?.counts?.total,
+        total: ordersCount?.counts?.total || 0,
         pending: ordersCount?.counts?.byStatus?.pending || 0,
         confirmed: ordersCount?.counts?.byStatus?.confirmed || 0,
         shipped: ordersCount?.counts?.byStatus?.shipped || 0,
@@ -174,18 +188,7 @@ export function AdminOrdersManager() {
     }
 
     // Fallback to calculating from orders list
-    interface OrderStatusStats {
-      total: number;
-      pending: number;
-      confirmed: number;
-      shipped: number;
-      ready: number;
-      preparing: number;
-      delivered: number;
-      cancelled: number;
-    }
-
-    const stats: OrderStatusStats = {
+    const stats = {
       total: pagination.totalItems,
       pending: orders.filter((o: Order) => o.status === 'pending').length,
       confirmed: orders.filter((o: Order) => o.status === 'confirmed').length,
@@ -217,6 +220,22 @@ export function AdminOrdersManager() {
     setCurrentPage(1); // Reset to first page when filter changes
   };
 
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const clearSearch = () => {
+    setSearchTerm('');
+    setDebouncedSearchTerm('');
+  };
+
+  const clearAllFilters = () => {
+    setSearchTerm('');
+    setDebouncedSearchTerm('');
+    setStatusFilter('all');
+    setCurrentPage(1);
+  };
+
   // Simple pagination like in your reference
   const renderPagination = () => {
     if (pagination.totalPages <= 1) return null;
@@ -231,16 +250,29 @@ export function AdminOrdersManager() {
           Prev
         </Button>
 
-        {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((num) => (
-          <Button
-            key={num}
-            onClick={() => handlePageChange(num)}
-            variant={num === currentPage ? "default" : "outline"}
-            className="px-3"
-          >
-            {num}
-          </Button>
-        ))}
+        {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+          let pageNum;
+          if (pagination.totalPages <= 5) {
+            pageNum = i + 1;
+          } else if (currentPage <= 3) {
+            pageNum = i + 1;
+          } else if (currentPage >= pagination.totalPages - 2) {
+            pageNum = pagination.totalPages - 4 + i;
+          } else {
+            pageNum = currentPage - 2 + i;
+          }
+
+          return (
+            <Button
+              key={pageNum}
+              onClick={() => handlePageChange(pageNum)}
+              variant={pageNum === currentPage ? "default" : "outline"}
+              className="px-3"
+            >
+              {pageNum}
+            </Button>
+          );
+        })}
 
         <Button
           onClick={() => handlePageChange(Math.min(currentPage + 1, pagination.totalPages))}
@@ -254,6 +286,9 @@ export function AdminOrdersManager() {
   };
 
   const stats = getStatusStats();
+
+  // Show active filters
+  const hasActiveFilters = searchTerm || statusFilter !== 'all';
 
   if (error) {
     return (
@@ -281,8 +316,13 @@ export function AdminOrdersManager() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <div className="flex items-center justify-end mb-6">
-       
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Orders Management</h1>
+            <p className="text-muted-foreground">
+              Manage and track all customer orders
+            </p>
+          </div>
           <Button onClick={refetch} variant="outline" className="flex items-center gap-2">
             <RefreshCw className="h-4 w-4" />
             Refresh
@@ -295,16 +335,16 @@ export function AdminOrdersManager() {
             <CardContent className="p-4 text-center">
               <ShoppingBag className="h-6 w-6 mx-auto text-primary mb-2" />
               <div className="text-2xl font-bold">{stats.total}</div>
-              <div className="text-lg text-muted-foreground">Total Orders</div>
+              <div className="text-sm text-muted-foreground">Total Orders</div>
             </CardContent>
           </Card>
           
           {Object.entries(statusConfig).map(([status, config]) => (
             <Card key={status}>
               <CardContent className="p-4 text-center">
-                <config.icon className="h-6 w-6 mx-auto mb-2" style={{ color: config.color.split(' ')[1].replace('text-', '') }} />
+                <config.icon className={`h-6 w-6 mx-auto mb-2 ${config.color.split(' ')[1]}`} />
                 <div className="text-2xl font-bold">{stats[status as keyof typeof stats]}</div>
-                <div className="text-lg text-muted-foreground">{config.label}</div>
+                <div className="text-sm text-muted-foreground">{config.label}</div>
               </CardContent>
             </Card>
           ))}
@@ -324,11 +364,19 @@ export function AdminOrdersManager() {
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Search orders, customers, or items..."
+                    placeholder="Search by Order ID (Invoice Number)..."
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 text-lg"
+                    onChange={handleSearch}
+                    className="pl-10 text-base"
                   />
+                  {searchTerm && (
+                    <button
+                      onClick={clearSearch}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
                 </div>
               </div>
               <div className="w-full sm:w-48">
@@ -347,6 +395,43 @@ export function AdminOrdersManager() {
                 </Select>
               </div>
             </div>
+            
+            {/* Active Filters Indicator */}
+            {hasActiveFilters && (
+              <div className="flex items-center justify-between mt-3 pt-3 border-t">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Filter className="h-4 w-4" />
+                  <span>Active filters:</span>
+                  {searchTerm && (
+                    <Badge variant="secondary" className="flex items-center gap-1">
+                      Search: "{searchTerm}"
+                      <button onClick={clearSearch} className="ml-1 hover:text-destructive">
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  )}
+                  {statusFilter !== 'all' && (
+                    <Badge variant="secondary" className="flex items-center gap-1">
+                      Status: {statusConfig[statusFilter as keyof typeof statusConfig]?.label}
+                      <button 
+                        onClick={() => setStatusFilter('all')} 
+                        className="ml-1 hover:text-destructive"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  )}
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={clearAllFilters}
+                  className="h-8 text-xs"
+                >
+                  Clear All
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       </motion.div>
@@ -361,27 +446,46 @@ export function AdminOrdersManager() {
         <AnimatePresence>
           {isLoading ? (
             <div className="flex items-center justify-center h-64">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              <div className="flex flex-col items-center gap-3">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                <p className="text-muted-foreground">Loading orders...</p>
+              </div>
             </div>
           ) : orders.length === 0 ? (
             <Card className="p-12 text-center">
-              <ShoppingBag className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">
-                {statusFilter === 'all' ? 'No orders yet' : 'No orders match your filters'}
+              <ShoppingBag className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-xl font-semibold mb-2">
+                {hasActiveFilters ? 'No orders match your search/filters' : 'No orders yet'}
               </h3>
-              <p className="text-muted-foreground mb-4">
-                {statusFilter === 'all' 
-                  ? 'Orders from your website will appear here' 
-                  : 'Try adjusting your filter criteria'
+              <p className="text-muted-foreground mb-6">
+                {searchTerm 
+                  ? `No orders found for Order ID: "${searchTerm}"` 
+                  : statusFilter !== 'all'
+                  ? `No orders with status: ${statusConfig[statusFilter as keyof typeof statusConfig]?.label}`
+                  : 'Orders from your website will appear here'
                 }
               </p>
-              <Button onClick={refetch}>
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Refresh Orders
-              </Button>
+              {hasActiveFilters && (
+                <Button onClick={clearAllFilters}>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Clear Filters
+                </Button>
+              )}
             </Card>
           ) : (
             <>
+              {/* Results Count */}
+              <div className="flex justify-between items-center">
+                <p className="text-sm text-muted-foreground">
+                  Showing {orders.length} of {pagination.totalItems} orders
+                  {debouncedSearchTerm && ` for "${debouncedSearchTerm}"`}
+                  {statusFilter !== 'all' && ` with status: ${statusConfig[statusFilter as keyof typeof statusConfig]?.label}`}
+                </p>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <span>Page {currentPage} of {pagination.totalPages}</span>
+                </div>
+              </div>
+
               {orders.map((order: Order, index: number) => (
                 <motion.div
                   key={order.id}
@@ -390,11 +494,11 @@ export function AdminOrdersManager() {
                   exit={{ opacity: 0, x: 20 }}
                   transition={{ duration: 0.3, delay: index * 0.05 }}
                 >
-                  <Card className="hover:shadow-lg transition-shadow">
+                  <Card className="hover:shadow-lg transition-shadow duration-200 border-l-4 border-l-primary">
                     <CardContent className="p-6">
                       <div className="flex items-center justify-between mb-4">
                         <div>
-                          <h3 className="font-semibold text-xl">Order #{order.id.slice(0, 8)}</h3>
+                          <h3 className="font-semibold text-xl">Order ID: {order.invoiceNumber}</h3>
                           <p className="text-md text-muted-foreground">
                             {formatDate(order.createdAt)}
                           </p>
@@ -435,11 +539,11 @@ export function AdminOrdersManager() {
                             value={order.status}
                             onValueChange={(newStatus: string) => handleUpdateOrderStatus(order.id, newStatus as Order['status'])}
                           >
-                            <SelectTrigger className="w-32 h-8">
+                            <SelectTrigger className="w-40">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              {Object.entries(statusConfig).map(([status, config]: [string, typeof statusConfig[keyof typeof statusConfig]]) => (
+                              {Object.entries(statusConfig).map(([status, config]) => (
                                 <SelectItem key={status} value={status}>
                                   {config.label}
                                 </SelectItem>
@@ -464,7 +568,7 @@ export function AdminOrdersManager() {
                 </motion.div>
               ))}
 
-              {/* Pagination - Simplified version */}
+              {/* Pagination */}
               {renderPagination()}
             </>
           )}
@@ -477,7 +581,7 @@ export function AdminOrdersManager() {
           {selectedOrder && (
             <>
               <DialogHeader>
-                <DialogTitle>Order Details - #{selectedOrder.id.slice(0, 8)}</DialogTitle>
+                <DialogTitle>Order Details - Order ID: {selectedOrder.invoiceNumber}</DialogTitle>
                 <DialogDescription>
                   Manage order details and update status
                 </DialogDescription>

@@ -10,14 +10,15 @@ export const orderApi = createApi({
     // =================== ORDERS ENDPOINTS ===================
     getAllOrders: builder.query<
       any,
-      { page?: number; limit?: number; status?: string }
+      { page?: number; limit?: number; status?: string; search?: string }
     >({
-      query: ({ page = 1, limit = 10, status = "" }) => {
+      query: ({ page = 1, limit = 10, status = "", search = "" }) => {
         const params = new URLSearchParams({
           page: page.toString(),
           limit: limit.toString(),
         });
         if (status) params.append("status", status);
+        if (search) params.append("search", search); // Added search parameter
         return {
           url: `/orders/getAllOrders?${params.toString()}`,
         };

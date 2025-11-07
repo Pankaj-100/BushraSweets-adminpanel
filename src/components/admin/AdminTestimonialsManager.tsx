@@ -23,20 +23,14 @@ export function AdminTestimonialsManager() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(6); // Show 6 items per page for 3x2 grid
 
-  const editForm = useState({
+  // CORRECTED: Proper useState for editForm
+  const [editForm, setEditForm] = useState({
     name: '',
     review: '',
     rating: 5,
     occasion: '',
     image: '',
-  })[0];
-  const setEditForm = useState({
-    name: '',
-    review: '',
-    rating: 5,
-    occasion: '',
-    image: '',
-  })[1];
+  });
 
   // Updated to use pagination parameters
   const { data: testimonialsData, refetch, isLoading } = useGetTestimonialsQuery({ 
