@@ -39,23 +39,26 @@ export function ImageUploadComponent({
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('File size must be less than 5MB');
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error('File size must be less than 20MB');
       return;
     }
 
     setIsUploading(true);
 
     try {
-      const response: any = await uploadSingleImage(file).unwrap();
-      if (response?.imageUrl) {
-        const imageUrl = response.imageUrl;
+      const response = await uploadSingleImage(file).unwrap();
+      if (response?.result?.data?.key) {
+        const imageUrl = response.result.data.key; // This is the path like "uploads/filename.jpg"
         const newUploadedImages = [...uploadedImages, imageUrl];
         setUploadedImages(newUploadedImages); 
         onChange(imageUrl);
         toast.success('Image uploaded successfully!');
+      } else {
+        throw new Error('Invalid response format');
       }
     } catch (error) {
+      console.error('Upload error:', error);
       toast.error('Failed to upload image');
     } finally {
       setIsUploading(false);
@@ -102,7 +105,14 @@ export function ImageUploadComponent({
             onChange={handleFileUpload}
             className="hidden"
           />
-          <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={isUploading} className="w-full">
+          <Button 
+            type="button" 
+            variant="outline" 
+            size="sm" 
+            onClick={() => fileInputRef.current?.click()} 
+            disabled={isUploading} 
+            className="w-full"
+          >
             {isUploading ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
@@ -121,21 +131,31 @@ export function ImageUploadComponent({
       {value && (
         <div>
           <Label className="text-sm">Current Image</Label>
-        
-              <div className="relative w-20 h-20 rounded-md overflow-hidden bg-muted">
-                <ImageWithFallback src={value} alt="Preview" className="object-cover" />
-              </div>
-      
+          <div className="mt-2">
+            <div className="relative w-20 h-20 rounded-md overflow-hidden bg-muted">
+              <ImageWithFallback src={value} alt="Preview" className="object-cover w-full h-full" />
+            </div>
+          </div>
         </div>
       )}
 
-      {/* {uploadedImages.length > 0 && (
+      {uploadedImages.length > 0 && (
         <div>
           <Label className="text-sm">Your Uploaded Images</Label>
           <div className="grid grid-cols-3 gap-2 mt-1">
             {uploadedImages.map((imageUrl, index) => (
-              <div key={index} className="relative group cursor-pointer rounded-md overflow-hidden hover:ring-2 hover:ring-primary transition-all">
-                <ImageWithFallback src={imageUrl} alt={`Uploaded ${index + 1}`} className=" " onClick={() => onChange(imageUrl)} />
+              <div 
+                key={index} 
+                className="relative group cursor-pointer rounded-md overflow-hidden hover:ring-2 hover:ring-primary transition-all"
+                onClick={() => onChange(imageUrl)}
+              >
+                <div className="w-full h-20">
+                  <ImageWithFallback 
+                    src={imageUrl} 
+                    alt={`Uploaded ${index + 1}`} 
+                    className="w-full h-full object-cover" 
+                  />
+                </div>
                 {value === imageUrl && (
                   <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
                     <div className="bg-primary text-white p-1 rounded-full">
@@ -143,14 +163,23 @@ export function ImageUploadComponent({
                     </div>
                   </div>
                 )}
-                <Button type="button" variant="destructive" size="sm" onClick={(e) => { e.stopPropagation(); handleDeleteUploaded(imageUrl); }} className="absolute top-1 right-1 h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button 
+                  type="button" 
+                  variant="destructive" 
+                  size="sm" 
+                  onClick={(e:any) => { 
+                    e.stopPropagation(); 
+                    handleDeleteUploaded(imageUrl); 
+                  }} 
+                  className="absolute top-1 right-1 h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
                   <Trash2 className="h-3 w-3" />
                 </Button>
               </div>
             ))}
           </div>
         </div>
-      )} */}
+      )}
     </div>
   );
 }

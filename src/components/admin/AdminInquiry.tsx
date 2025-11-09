@@ -38,8 +38,8 @@ function InquiryDetailsModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg max-h-[80vh] flex flex-col">
-        <DialogHeader>
+      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>
             {type === "event" ? "Event Inquiry Details" : "General Inquiry Details"}
           </DialogTitle>
@@ -49,31 +49,121 @@ function InquiryDetailsModal({
         </DialogHeader>
 
         {/* Scrollable content area */}
-        <div className="flex-1 overflow-y-auto pr-2">
-          {type === "event" ? (
-            <div className="space-y-3 text-sm">
-              <p><strong>Name:</strong> {inquiry.firstName} {inquiry.lastName}</p>
-              <p><strong>Email:</strong> {inquiry.email}</p>
-              <p><strong>Phone:</strong> {inquiry.phone}</p>
-              <p><strong>Event Type:</strong> {inquiry.eventType}</p>
-              <p><strong>Guests:</strong> {inquiry.numberOfGuests}</p>
-              <p><strong>Budget:</strong> {inquiry.budgetRange || "N/A"}</p>
-              <p><strong>Event Date:</strong> {new Date(inquiry.eventDate).toDateString()}</p>
-              <p><strong>Delivery Address:</strong> {inquiry.deliveryAddress}</p>
-              <p><strong>Contact Method:</strong> {inquiry.contactMethod || "N/A"}</p>
-              <p><strong>Allergies:</strong> {inquiry.allergiesRestrictions || "None"}</p>
-              <p><strong>Special Request:</strong> {inquiry.specialRequest || "N/A"}</p>
-              <p><strong>Additional Message:</strong> {inquiry.additionalMessage || "N/A"}</p>
-            </div>
-          ) : (
-            <div className="space-y-3 text-sm">
-              <p><strong>Name:</strong> {inquiry.name}</p>
-              <p><strong>Email:</strong> {inquiry.email}</p>
-              <p><strong>Phone:</strong> {inquiry.phone}</p>
-              <p><strong>Subject:</strong> {inquiry.subject}</p>
-              <p><strong>Message:</strong> {inquiry.message}</p>
-            </div>
-          )}
+        <div className="flex-1 overflow-y-auto px-1">
+          <div className="space-y-4 py-2">
+            {type === "event" ? (
+              <div className="space-y-4 text-sm">
+                <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+                  <div className="space-y-3">
+                    <div>
+                      <strong className="text-foreground">Name:</strong>
+                      <p className="mt-1 text-muted-foreground">{inquiry.firstName} {inquiry.lastName}</p>
+                    </div>
+                    <div>
+                      <strong className="text-foreground">Email:</strong>
+                      <p className="mt-1 text-muted-foreground">{inquiry.email}</p>
+                    </div>
+                    <div>
+                      <strong className="text-foreground">Phone:</strong>
+                      <p className="mt-1 text-muted-foreground">{inquiry.phone}</p>
+                    </div>
+                    <div>
+                      <strong className="text-foreground">Event Type:</strong>
+                      <p className="mt-1 text-muted-foreground">{inquiry.eventType}</p>
+                    </div>
+                    <div>
+                      <strong className="text-foreground">Number of Guests:</strong>
+                      <p className="mt-1 text-muted-foreground">{inquiry.numberOfGuests}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div>
+                      <strong className="text-foreground">Budget:</strong>
+                      <p className="mt-1 text-muted-foreground">{inquiry.budgetRange || "N/A"}</p>
+                    </div>
+                    <div>
+                      <strong className="text-foreground">Event Date:</strong>
+                      <p className="mt-1 text-muted-foreground">{new Date(inquiry.eventDate).toLocaleDateString()}</p>
+                    </div>
+                    <div>
+                      <strong className="text-foreground">Contact Method:</strong>
+                      <p className="mt-1 text-muted-foreground">{inquiry.contactMethod || "N/A"}</p>
+                    </div>
+                    <div>
+                      <strong className="text-foreground">Allergies & Restrictions:</strong>
+                      <p className="mt-1 text-muted-foreground">{inquiry.allergiesRestrictions || "None"}</p>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Full width sections for longer content */}
+                <div className="space-y-3 border-t pt-4">
+                  <div>
+                    <strong className="text-foreground">Delivery Address:</strong>
+                    <p className="mt-1 text-muted-foreground whitespace-pre-wrap">{inquiry.deliveryAddress}</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-3 border-t pt-4">
+                  <div>
+                    <strong className="text-foreground">Special Request:</strong>
+                    <p className="mt-1 text-muted-foreground whitespace-pre-wrap">{inquiry.specialRequest || "N/A"}</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-3 border-t pt-4">
+                  <div>
+                    <strong className="text-foreground">Additional Message:</strong>
+                    <p className="mt-1 text-muted-foreground whitespace-pre-wrap">{inquiry.additionalMessage || "N/A"}</p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4 text-sm">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-3">
+                    <div>
+                      <strong className="text-foreground">Name:</strong>
+                      <p className="mt-1 text-muted-foreground">{inquiry.name}</p>
+                    </div>
+                    <div>
+                      <strong className="text-foreground">Email:</strong>
+                      <p className="mt-1 text-muted-foreground">{inquiry.email}</p>
+                    </div>
+                    <div>
+                      <strong className="text-foreground">Phone:</strong>
+                      <p className="mt-1 text-muted-foreground">{inquiry.phone}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div>
+                      <strong className="text-foreground">Inquiry Date:</strong>
+                      <p className="mt-1 text-muted-foreground">{new Date(inquiry.createdAt).toLocaleDateString()}</p>
+                    </div>
+                    <div>
+                      <strong className="text-foreground">Subject:</strong>
+                      <p className="mt-1 text-muted-foreground">{inquiry.subject}</p>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Full width section for message */}
+                <div className="space-y-3 border-t pt-4">
+                  <div>
+                    <strong className="text-foreground">Message:</strong>
+                    <p className="mt-1 text-muted-foreground whitespace-pre-wrap">{inquiry.message}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Close button at bottom */}
+        <div className="flex-shrink-0 border-t pt-4 mt-4">
+          <Button onClick={onClose} className="w-full">
+            Close
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

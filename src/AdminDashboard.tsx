@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate, useLocation } from 'react-router-dom';
-
+import {toast} from 'sonner';
 // Import admin components
 import { AdminDessertsManager } from './components/admin/AdminDessertsManager';
 import { AdminHeroManager } from './components/admin/AdminHeroManager';
@@ -585,10 +585,17 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   };
 
   // Menu items with unique icons
-  const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'orders', label: 'Orders Management', icon: ShoppingBag },
-    { id: 'desserts', label: 'Desserts Management', icon: Package },
+  interface MenuItem {
+    id: string;
+    label: string;
+    icon: React.ForwardRefExoticComponent<any>;
+    badge?: number;
+  }
+  
+  const menuItems: MenuItem[] = [
+      { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { id: 'orders', label: 'Orders Management', icon: ShoppingBag },
+      { id: 'desserts', label: 'Desserts Management', icon: Package },
     { id: 'testimonials', label: 'Testimonials', icon: Quote },
     { id: 'hero', label: 'Hero Section', icon: Edit },
     { id: 'about', label: 'About Section', icon: Users },
@@ -663,6 +670,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
               onClick={() => {
                 localStorage.removeItem("token");
                 localStorage.removeItem("user");
+                toast.success('Logged out successfully!');
                 navigate("/login");
               }}
               className="w-full flex items-center px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100"

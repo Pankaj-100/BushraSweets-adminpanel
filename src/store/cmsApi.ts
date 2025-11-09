@@ -42,7 +42,7 @@ export const cmsApi = createApi({
     }),
 
     // =================== IMAGE UPLOAD ===================
-    uploadSingleImage: builder.mutation<any, File>({
+    uploadSingleImage: builder.mutation<{ result: { success: boolean; message: number; data: { key: string; size: number; mimetype: string } } }, File>({
       query: (imageFile) => {
         const formData = new FormData();
         formData.append("image", imageFile);
@@ -54,7 +54,7 @@ export const cmsApi = createApi({
       },
       invalidatesTags: ["Upload"],
     }),
-    uploadMultipleImages: builder.mutation<any, File[]>({
+    uploadMultipleImages: builder.mutation<{ result: { success: boolean; message: number; data: Array<{ key: string; size: number; mimetype: string }> } }, File[]>({
       query: (files) => {
         const formData = new FormData();
         files.forEach((file) => formData.append("images", file));
