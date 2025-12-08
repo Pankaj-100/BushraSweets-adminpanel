@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '../ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
 import { useGetOrdersCountQuery } from "../../store/orderApi";
 
 import { 
@@ -20,12 +20,11 @@ import {
   User,
   Phone,
   MapPin,
-  Calendar,
-  DollarSign,
   Search,
   Filter,
   RefreshCw,
-  X
+  X,
+  Loader2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
@@ -39,10 +38,12 @@ interface OrderItem {
   id: string;
   dessertName: string;
   price: number;
+  unitPrice: number;
   quantity: number;
   portionSize: string;
   itemTotal: number;
   Dessert: {
+    dessertName: string;
     dessertImages: string[];
     description: string;
   };
@@ -53,6 +54,8 @@ interface Order {
   invoiceNumber: string;
   subTotal: number;
   deliveryCharge: number;
+  gstAmount: number;
+  gstPercentage: number;
   total: number;
   status: 'pending' | 'confirmed' | 'preparing' | 'ready' | 'delivered' | 'cancelled';
   paymentStatus: string;
@@ -85,13 +88,14 @@ const statusConfig = {
 };
 
 export function AdminOrdersManager() {
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const prevSelectedOrderIdRef = useRef<string | null>(null);
 
   // API Queries and Mutations
   const { 
@@ -103,33 +107,58 @@ export function AdminOrdersManager() {
     page: currentPage, 
     limit: pageSize, 
     status: statusFilter !== 'all' ? statusFilter : '',
-    search: debouncedSearchTerm // Use debounced search term
+    search: debouncedSearchTerm
   });
   
   const { data: ordersCount, isLoading: countLoading } = useGetOrdersCountQuery();
   const [updateOrderStatus] = useUpdateOrderStatusMutation();
 
-  // Get detailed order when selected
-  const { data: detailedOrder } = useGetOrderByIdQuery(
-    selectedOrder?.id || '', 
-    { skip: !selectedOrder?.id }
+  // Get detailed order when modal is open and selectedOrderId is set
+  const { 
+    data: detailedOrderData, 
+    isLoading: isDetailedLoading,
+    isFetching: isDetailedFetching 
+  } = useGetOrderByIdQuery(
+    selectedOrderId || '', 
+    { 
+      skip: !selectedOrderId,
+      refetchOnMountOrArgChange: true // This ensures fresh data when opening modal
+    }
   );
 
   const orders = ordersResponse?.orders || [];
   const pagination = ordersResponse?.pagination || { totalItems: 0, totalPages: 1, page: 1 };
+  const selectedOrder = detailedOrderData?.order || null;
 
-  // Update selected order when detailed data is fetched
-  useEffect(() => {
-    if (detailedOrder && selectedOrder) {
-      setSelectedOrder(detailedOrder.order);
+  // Reset selectedOrderId when modal closes
+  const handleDialogOpenChange = (open: boolean) => {
+    setIsDetailsOpen(open);
+    if (!open) {
+      // Clear the selected order after a short delay to prevent flash of old data
+      setTimeout(() => {
+        setSelectedOrderId(null);
+        prevSelectedOrderIdRef.current = null;
+      }, 300);
     }
-  }, [detailedOrder, selectedOrder]);
+  };
+
+  // Handle view order details
+  const handleViewOrderDetails = (order: Order) => {
+    // Store previous ID to track changes
+    prevSelectedOrderIdRef.current = selectedOrderId;
+    
+    // Set new order ID
+    setSelectedOrderId(order.id);
+    
+    // Open modal
+    setIsDetailsOpen(true);
+  };
 
   // Debounced search to avoid too many API calls
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
-      setCurrentPage(1); // Reset to first page when searching
+      setCurrentPage(1);
     }, 500);
 
     return () => clearTimeout(timeoutId);
@@ -144,11 +173,6 @@ export function AdminOrdersManager() {
       console.error('Failed to update order status:', error);
       toast.error('Failed to update order status');
     }
-  };
-
-  const handleUpdateAdminNotes = async (orderId: string, notes: string) => {
-    // Note: You'll need to add this endpoint to your API if you want to save admin notes
-    toast.success('Admin notes updated (Note: Add API endpoint to persist notes)');
   };
 
   const getStatusStats = (): {
@@ -174,7 +198,6 @@ export function AdminOrdersManager() {
       };
     }
 
-    // Use the counts from the ordersCount API if available
     if (ordersCount.counts) {
       return {
         total: ordersCount?.counts?.total || 0,
@@ -193,7 +216,7 @@ export function AdminOrdersManager() {
       total: pagination.totalItems,
       pending: orders.filter((o: Order) => o.status === 'pending').length,
       confirmed: orders.filter((o: Order) => o.status === 'confirmed').length,
-      shipped: 0, // Not in your status config
+      shipped: 0,
       ready: orders.filter((o: Order) => o.status === 'ready').length,
       preparing: orders.filter((o: Order) => o.status === 'preparing').length,
       delivered: orders.filter((o: Order) => o.status === 'delivered').length,
@@ -218,7 +241,7 @@ export function AdminOrdersManager() {
 
   const handleStatusFilterChange = (value: string) => {
     setStatusFilter(value);
-    setCurrentPage(1); // Reset to first page when filter changes
+    setCurrentPage(1);
   };
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -237,7 +260,6 @@ export function AdminOrdersManager() {
     setCurrentPage(1);
   };
 
-  // Simple pagination like in your reference
   const renderPagination = () => {
     if (pagination.totalPages <= 1) return null;
 
@@ -287,9 +309,8 @@ export function AdminOrdersManager() {
   };
 
   const stats = getStatusStats();
-
-  // Show active filters
   const hasActiveFilters = searchTerm || statusFilter !== 'all';
+  const isModalLoading = (isDetailedLoading || isDetailedFetching) && selectedOrderId !== null;
 
   if (error) {
     return (
@@ -555,10 +576,7 @@ export function AdminOrdersManager() {
                           <Button
                             size="lg"
                             variant="outline"
-                            onClick={() => {
-                              setSelectedOrder(order);
-                              setIsDetailsOpen(true);
-                            }}
+                            onClick={() => handleViewOrderDetails(order)}
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
@@ -577,9 +595,16 @@ export function AdminOrdersManager() {
       </motion.div>
 
       {/* Order Details Modal */}
-      <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+      <Dialog open={isDetailsOpen} onOpenChange={handleDialogOpenChange}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          {selectedOrder && (
+          {isModalLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="flex flex-col items-center gap-3">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <p className="text-muted-foreground">Loading order details...</p>
+              </div>
+            </div>
+          ) : selectedOrder ? (
             <>
               <DialogHeader>
                 <DialogTitle>Order Details - Order ID: {selectedOrder.invoiceNumber}</DialogTitle>
@@ -655,7 +680,7 @@ export function AdminOrdersManager() {
                           {item.Dessert.dessertImages?.[0] ? (
                             <img 
                               src={`https://bushra-sweets.ap-south-1.storage.onantryk.com/${item.Dessert.dessertImages[0]}`} 
-                              alt={item.dessertName}
+                              alt={item.Dessert.dessertName}
                               className="w-12 h-12 bg-muted rounded-md object-cover"
                             />
                           ) : (
@@ -670,7 +695,7 @@ export function AdminOrdersManager() {
                             )}
                           </div>
                         </div>
-                        <div className=" px-2 text-right">
+                        <div className="px-2 text-right">
                           <p className="font-medium">${item.itemTotal.toFixed(2)}</p>
                           <p className="text-xs text-muted-foreground">${item.unitPrice}/each</p>
                         </div>
@@ -690,8 +715,8 @@ export function AdminOrdersManager() {
                       <span>Delivery Fee</span>
                       <span>{selectedOrder.deliveryCharge === 0 ? 'Free' : `$${selectedOrder.deliveryCharge.toFixed(2)}`}</span>
                     </div>
-                       <div className="flex justify-between">
-                      <span>GST ({selectedOrder.gstPercentage === 0 ? 'Free' : `$${selectedOrder.gstPercentage.toFixed(2)}`})</span>
+                    <div className="flex justify-between">
+                      <span>GST ({selectedOrder.gstPercentage === 0 ? 'Free' : `${selectedOrder.gstPercentage.toFixed(2)}%`})</span>
                       <span>{selectedOrder.gstAmount === 0 ? 'Free' : `$${selectedOrder.gstAmount.toFixed(2)}`}</span>
                     </div>
                     
@@ -707,7 +732,9 @@ export function AdminOrdersManager() {
                   <Label>Update Status</Label>
                   <Select
                     value={selectedOrder.status}
-                    onValueChange={(newStatus:any) => handleUpdateOrderStatus(selectedOrder.id, newStatus as Order['status'])}
+                    onValueChange={(newStatus: Order['status']) => 
+                      handleUpdateOrderStatus(selectedOrder.id, newStatus)
+                    }
                   >
                     <SelectTrigger className="w-full mt-1">
                       <SelectValue />
@@ -723,6 +750,13 @@ export function AdminOrdersManager() {
                 </div>
               </div>
             </>
+          ) : (
+            <div className="flex items-center justify-center py-12">
+              <div className="flex flex-col items-center gap-3">
+                <Package className="h-12 w-12 text-muted-foreground" />
+                <p className="text-muted-foreground">No order data available</p>
+              </div>
+            </div>
           )}
         </DialogContent>
       </Dialog>
