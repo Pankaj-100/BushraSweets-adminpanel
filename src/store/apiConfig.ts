@@ -1,7 +1,7 @@
 // src/services/apiConfig.ts
 import { fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-export const BASE_URL = 'https://api.banofoods.com/api/v1';
+export const BASE_URL = 'https://bushra-sweets-backend.onrender.com/api/v1';
 
 // Token expiration check utility
 const isTokenExpired = (token: string): boolean => {

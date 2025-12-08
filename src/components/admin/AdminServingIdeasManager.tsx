@@ -176,13 +176,14 @@ export function AdminServingIdeasManager() {
               Add New Idea
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-lg">{editingIdea ? 'Edit Serving Idea' : 'Add New Serving Idea'}</DialogTitle>
               <DialogDescription className="text-lg">
                 {editingIdea ? 'Update your serving idea with occasion-specific details and imagery.' : 'Create a new serving idea to showcase how your desserts fit different occasions and celebrations.'}
               </DialogDescription>
             </DialogHeader>
+            
             <div className="space-y-6">
               <div>
                 <Label htmlFor="title" className="mb-2 text-lg">Title *</Label>
@@ -200,7 +201,7 @@ export function AdminServingIdeasManager() {
                   value={formData.description} 
                   onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} 
                   placeholder="Describe how your desserts fit this occasion..." 
-                  rows={3} 
+                  rows={6}  
                 />
               </div>
               <div>

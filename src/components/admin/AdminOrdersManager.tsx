@@ -66,6 +66,7 @@ interface Order {
     fullName: string;
     phone: string;
     address: string;
+    email: string;
     city: string;
     zip: string;
     instruction?: string;
@@ -626,7 +627,7 @@ export function AdminOrdersManager() {
                     </div>
                     <div>
                       <Label>Email</Label>
-                      <p>{selectedOrder?.User?.email}</p>
+                      <p>{selectedOrder?.deliveryAddress?.email}</p>
                     </div>
                     <div className="md:col-span-2">
                       <Label>Delivery Address</Label>
@@ -653,7 +654,7 @@ export function AdminOrdersManager() {
                         <div className="flex items-center gap-3">
                           {item.Dessert.dessertImages?.[0] ? (
                             <img 
-                              src={item.Dessert.dessertImages[0]} 
+                              src={`https://bushra-sweets.ap-south-1.storage.onantryk.com/${item.Dessert.dessertImages[0]}`} 
                               alt={item.dessertName}
                               className="w-12 h-12 bg-muted rounded-md object-cover"
                             />
@@ -661,7 +662,7 @@ export function AdminOrdersManager() {
                             <div className="w-12 h-12 bg-muted rounded-md"></div>
                           )}
                           <div>
-                            <p className="font-medium">{item.dessertName}</p>
+                            <p className="font-medium">{item.Dessert.dessertName}</p>
                             <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
                             <p className="text-sm text-muted-foreground">Serving: {item.portionSize}</p>
                             {item.Dessert.description && (
@@ -669,9 +670,9 @@ export function AdminOrdersManager() {
                             )}
                           </div>
                         </div>
-                        <div className="text-right">
+                        <div className=" px-2 text-right">
                           <p className="font-medium">${item.itemTotal.toFixed(2)}</p>
-                          <p className="text-xs text-muted-foreground">${item.price}/each</p>
+                          <p className="text-xs text-muted-foreground">${item.unitPrice}/each</p>
                         </div>
                       </div>
                     ))}

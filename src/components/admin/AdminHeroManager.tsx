@@ -199,27 +199,7 @@ export function AdminHeroManager() {
                 />
               </div>
 
-              <div>
-                <Label className="mb-2 text-lg">Quick Select Backgrounds</Label>
-                <div className="grid grid-cols-2 gap-2 mt-2">
-                  {sampleBackgrounds.map((url, index) => (
-                    <div
-                      key={index}
-                      className="relative cursor-pointer rounded-md overflow-hidden hover:ring-2 hover:ring-primary transition-all"
-                      onClick={() => setFormData(prev => ({ ...prev, backgroundImage: url }))}
-                    >
-                      <ImageWithFallback src={url} alt={`Background option ${index + 1}`} className="w-full h-20 object-cover" />
-                      {formData.backgroundImage === url && (
-                        <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
-                          <div className="bg-primary text-white p-1 rounded-full">
-                            <Eye className="h-4 w-4" />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
+            
 
               <div className="flex gap-3">
                 <Button onClick={handleSave} className="flex-1" disabled={isSaving}>
