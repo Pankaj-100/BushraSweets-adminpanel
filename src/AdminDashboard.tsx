@@ -3,11 +3,12 @@ import {
   Settings, Package, ShoppingBag, Users, User, FileText, Plus, Edit, 
   ArrowLeft, LayoutDashboard, Quote, CreditCard, BarChart3,
   Calendar, TrendingUp, UserCheck, Bell, Search, LogOut, Menu, X,
-  Shield, FileCheck, Receipt, Heart
+  Shield, FileCheck, Receipt, Heart, Truck // Add Truck icon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import {toast} from 'sonner';
+import { toast } from 'sonner';
+
 // Import admin components
 import { AdminDessertsManager } from './components/admin/AdminDessertsManager';
 import { AdminHeroManager } from './components/admin/AdminHeroManager';
@@ -21,6 +22,7 @@ import { AdminPrivacyPolicyManager } from './components/admin/AdminPrivacyPolicy
 import { AdminTermsOfServiceManager } from './components/admin/AdminTermsOfServiceManager';
 import { AdminRefundPolicyManager } from './components/admin/AdminRefundPolicyManager';
 import { AdminFoodSafetyManager } from './components/admin/AdminFoodSafetyManager';
+import { AdminDeliveryChargesManager } from './components/admin/AdminDeliveryChargesManager'; // Add this import
 
 // Import UI components
 import { Button } from './components/ui/button';
@@ -33,7 +35,8 @@ import { AdminInquiries } from './components/admin/AdminInquiry';
 // Import API hooks
 import { useGetDashboardCountsQuery, useGetContentStatsQuery } from './store/orderApi';
 
-type AdminSectionType = 'dashboard' | 'desserts' | 'hero' | 'about' | 'serving-ideas' | 'testimonials' | 'orders' | 'settings' | 'payments' | 'inquiries' | 'privacy-policy' | 'terms-of-service' | 'refund-policy' | 'food-safety';
+// Update AdminSectionType to include 'delivery-charges'
+type AdminSectionType = 'dashboard' | 'desserts' | 'hero' | 'about' | 'serving-ideas' | 'testimonials' | 'orders' | 'settings' | 'payments' | 'inquiries' | 'privacy-policy' | 'terms-of-service' | 'refund-policy' | 'food-safety' | 'delivery-charges';
 
 interface AdminDashboardProps {
   onLogout?: () => void;
@@ -65,6 +68,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     if (path.includes('/admin/terms-of-service')) return 'terms-of-service';
     if (path.includes('/admin/refund-policy')) return 'refund-policy';
     if (path.includes('/admin/food-safety')) return 'food-safety';
+    if (path.includes('/admin/delivery-charges')) return 'delivery-charges'; // Add this
     return 'dashboard';
   };
 
@@ -73,19 +77,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     totalDesserts: 0,
     activeOrders: 0,
     totalTestimonials: 0,
-    configuredGateways: 1, // Static value as requested
+    configuredGateways: 1,
     pendingOrders: 0,
     completedOrders: 0,
     activeDesserts: 0,
     featuredDesserts: 0,
-    servingIdeas: 0
+    servingIdeas: 0,
+    deliveryConfigured: false // Add this for delivery charges status
   });
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [notifications, setNotifications] = useState([
-    { id: 1, message: 'New order received', time: '2 minutes ago', read: false },
-    { id: 2, message: 'Payment gateway updated', time: '1 hour ago', read: false },
-    { id: 3, message: 'New testimonial submitted', time: '3 hours ago', read: true }
-  ]);
 
   // Refs for click outside detection
   const sidebarRef = useRef<HTMLDivElement>(null);
@@ -189,7 +189,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       'privacy-policy': 'Privacy Policy',
       'terms-of-service': 'Terms of Service',
       'refund-policy': 'Refund Policy',
-      'food-safety': 'Food Safety'
+      'food-safety': 'Food Safety',
+      'delivery-charges': 'Delivery Charges' // Add this
     };
     return titles[currentSection] || 'Admin Dashboard';
   };
@@ -205,11 +206,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       'settings': 'Configure business settings, contact info, and social media links',
       'payments': 'Configure payment gateways for online transactions',
       'dashboard': '',
-      'inquiries': 'Manage customer inquiries ',
+      'inquiries': 'Manage customer inquiries',
       'privacy-policy': 'Manage and update your website\'s privacy policy content',
       'terms-of-service': 'Manage and update your website\'s terms of service content',
-      'refund-policy': 'Manage and update your website\'s refund policy content ',
-      'food-safety': 'Manage and update your food safety guidelines content'
+      'refund-policy': 'Manage and update your website\'s refund policy content',
+      'food-safety': 'Manage and update your food safety guidelines content',
+      'delivery-charges': 'Configure delivery fees and GST charges for all orders' // Add this
     };
     return descriptions[currentSection] || ' ';
   };
@@ -233,7 +235,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       case 'payments':
         return <AdminPaymentSettings />;
       case 'inquiries':
-        return <AdminInquiries/>
+        return <AdminInquiries />;
       case 'privacy-policy':
         return <AdminPrivacyPolicyManager />;
       case 'terms-of-service':
@@ -241,7 +243,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       case 'refund-policy':
         return <AdminRefundPolicyManager />;
       case 'food-safety':
-        return <AdminFoodSafetyManager />;  
+        return <AdminFoodSafetyManager />;
+      case 'delivery-charges': // Add this case
+        return <AdminDeliveryChargesManager />;
       case 'dashboard':
       default:
         return (
@@ -256,7 +260,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                       <p className="text-2xl font-bold text-blue-800">
                         {dashboardLoading ? '...' : dashboardData.totalDesserts}
                       </p>
-                  
                     </div>
                     <div className="text-blue-600 bg-blue-100 p-3 rounded-full">
                       <Package className="h-6 w-6" />
@@ -273,7 +276,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                       <p className="text-2xl font-bold text-green-800">
                         {dashboardLoading ? '...' : dashboardData.activeOrders}
                       </p>
-                   
                     </div>
                     <div className="text-green-600 bg-green-100 p-3 rounded-full">
                       <ShoppingBag className="h-6 w-6" />
@@ -290,7 +292,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                       <p className="text-2xl font-bold text-pink-600">
                         {dashboardLoading ? '...' : dashboardData.totalTestimonials}
                       </p>
-                    
                     </div>
                     <div className="text-pink-600 p-3 rounded-full bg-pink-100">
                       <Quote className="h-6 w-6" />
@@ -307,7 +308,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                       <p className="text-2xl font-bold text-purple-800">
                         {dashboardData.configuredGateways}
                       </p>
-                    
                     </div>
                     <div className="text-purple-600 bg-purple-100 p-3 rounded-full">
                       <CreditCard className="h-6 w-6" />
@@ -436,6 +436,25 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
             
             {/* Management Sections */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Add Delivery Charges Card */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Truck className="h-5 w-5" />
+                    Delivery Charges
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground text-lg mb-4">
+                    Configure delivery fees and GST charges for all customer orders
+                  </p>
+                  <Button className="w-full" onClick={() => handleSectionChange('delivery-charges')}>
+                    <Truck className="h-5 w-5" />
+                    Manage Charges
+                  </Button>
+                </CardContent>
+              </Card>
+
               <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-lg">
@@ -593,9 +612,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   }
   
   const menuItems: MenuItem[] = [
-      { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-      { id: 'orders', label: 'Orders Management', icon: ShoppingBag },
-      { id: 'desserts', label: 'Desserts Management', icon: Package },
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'orders', label: 'Orders Management', icon: ShoppingBag },
+    { id: 'desserts', label: 'Desserts Management', icon: Package },
+    { id: 'delivery-charges', label: 'Delivery Charges', icon: Truck }, // Add this
     { id: 'testimonials', label: 'Testimonials', icon: Quote },
     { id: 'hero', label: 'Hero Section', icon: Edit },
     { id: 'about', label: 'About Section', icon: Users },

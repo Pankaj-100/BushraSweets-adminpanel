@@ -5,7 +5,7 @@ import { baseQueryWithReauth } from "./apiConfig";
 export const orderApi = createApi({
   reducerPath: "orderApi",
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["Orders", "PrivacyPolicy", "TermsOfService", "RefundPolicy", "FoodSafety", "Dashboard", "PaymentConfig"],
+  tagTypes: ["Orders", "PrivacyPolicy", "TermsOfService", "RefundPolicy", "FoodSafety", "Dashboard", "PaymentConfig", "Charges"],
   endpoints: (builder) => ({
     // =================== ORDERS ENDPOINTS ===================
     getAllOrders: builder.query<
@@ -46,6 +46,36 @@ export const orderApi = createApi({
     getOrdersCount: builder.query<any, void>({
       query: () => `/orders/getOrdersCount`,
       providesTags: ["Orders"],
+    }),
+
+    // =================== CHARGES ENDPOINTS ===================
+    getCharges: builder.query<any, void>({
+      query: () => `/charges/getCharges`,
+      providesTags: ["Charges"],
+    }),
+
+    setCharges: builder.mutation<
+      any,
+      { delivery: number; gst: number }
+    >({
+      query: (chargesData) => ({
+        url: `/charges/setCharges`,
+        method: "POST",
+        body: chargesData,
+      }),
+      invalidatesTags: ["Charges"],
+    }),
+
+    updateCharges: builder.mutation<
+      any,
+      { delivery: number; gst: number }
+    >({
+      query: (chargesData) => ({
+        url: `/charges/updateCharges`,
+        method: "PUT",
+        body: chargesData,
+      }),
+      invalidatesTags: ["Charges"],
     }),
 
     // =================== DASHBOARD ENDPOINTS ===================
@@ -168,16 +198,26 @@ export const {
   useGetOrderByIdQuery,
   useUpdateOrderStatusMutation,
   useGetOrdersCountQuery,
+  // Charges hooks
+  useGetChargesQuery,
+  useSetChargesMutation,
+  useUpdateChargesMutation,
+  // Dashboard hooks
   useGetDashboardCountsQuery,
   useGetContentStatsQuery,
+  // Payment config hooks
   useGetPaymentConfigQuery,
   useUpdatePaymentConfigMutation,
+  // Privacy policy hooks
   useGetPrivacyPolicyQuery,
   useUpdatePrivacyPolicyMutation,
+  // Terms of service hooks
   useGetTermsOfServiceQuery,
   useUpdateTermsOfServiceMutation,
+  // Refund policy hooks
   useGetRefundPolicyQuery,
   useUpdateRefundPolicyMutation,
+  // Food safety hooks
   useGetFoodSafetyQuery,
   useUpdateFoodSafetyMutation,
 } = orderApi;

@@ -6,7 +6,10 @@ import Layout from "./Layout";
 import AdminDashboard from "./AdminDashboard";
 import LoginPage from "./LoginPage";
 import ProtectedRoute from "./ProtectedRoute";
+// Add this import
+import { AdminDeliveryChargesManager } from './components/admin/AdminDeliveryChargesManager';
 
+// Add this route in the admin routes section
 function AdminRouterWrapper() {
   return <AdminDashboard />;
 }
@@ -37,6 +40,8 @@ export default function App() {
                         <Route path="/hero" element={<AdminRouterWrapper />} />
                         <Route path="/about" element={<AdminRouterWrapper />} />
                         <Route path="/serving-ideas" element={<AdminRouterWrapper />} />
+                        <Route path="/delivery-charges" element={<AdminRouterWrapper />} />
+
                         <Route path="/testimonials" element={<AdminRouterWrapper />} />
                         <Route path="/orders" element={<AdminRouterWrapper />} />
                         <Route path="/settings" element={<AdminRouterWrapper />} />
