@@ -338,13 +338,8 @@ export function AdminOrdersManager() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Orders Management</h1>
-            <p className="text-muted-foreground">
-              Manage and track all customer orders
-            </p>
-          </div>
+        <div className="flex items-center justify-end mb-6">
+    
           <Button onClick={refetch} variant="outline" className="flex items-center gap-2">
             <RefreshCw className="h-4 w-4" />
             Refresh
