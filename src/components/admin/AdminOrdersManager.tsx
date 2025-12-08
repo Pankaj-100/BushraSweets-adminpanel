@@ -690,6 +690,11 @@ export function AdminOrdersManager() {
                       <span>Delivery Fee</span>
                       <span>{selectedOrder.deliveryCharge === 0 ? 'Free' : `$${selectedOrder.deliveryCharge.toFixed(2)}`}</span>
                     </div>
+                       <div className="flex justify-between">
+                      <span>GST ({selectedOrder.gstPercentage === 0 ? 'Free' : `$${selectedOrder.gstPercentage.toFixed(2)}`})</span>
+                      <span>{selectedOrder.gstAmount === 0 ? 'Free' : `$${selectedOrder.gstAmount.toFixed(2)}`}</span>
+                    </div>
+                    
                     <div className="flex justify-between font-medium text-base pt-2 border-t">
                       <span>Total</span>
                       <span>${selectedOrder.total.toFixed(2)}</span>
