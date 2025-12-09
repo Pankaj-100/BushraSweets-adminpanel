@@ -158,7 +158,7 @@ export function AdminTermsOfServiceManager() {
                   disabled={isUpdating}
                 >
                   <Save className="h-4 w-4 mr-2" />
-                  {isUpdating ? 'Saving...' : (content ? 'Update Policy' : 'Create Policy')}
+                  {isUpdating ? 'Saving...' : (content ? 'Update Terms of Service' : 'Create Terms of Service')}
                 </Button>
                 <Button 
                   variant="outline" 
