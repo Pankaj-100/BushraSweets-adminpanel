@@ -112,7 +112,7 @@ export function AdminTermsOfServiceManager() {
           <DialogTrigger asChild>
             <Button onClick={handleEdit} className="text-lg">
               <Edit className="h-4 w-4 mr-2" />
-              {content ? 'Edit Policy' : 'Create Policy'}
+              {content ? 'Edit Terms of Service' : 'Create Terms of Service'}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-6xl w-full max-h-[90vh] flex flex-col">
